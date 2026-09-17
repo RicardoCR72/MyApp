@@ -1,0 +1,127 @@
+<ion-header class="ion-no-border">
+  <ion-toolbar>
+    <ion-title>Usuarios</ion-title>
+    <ion-buttons slot="end">
+      <ion-button (click)="loadUsers()" aria-label="Actualizar usuarios">
+        <ion-icon name="refresh-outline" slot="icon-only"></ion-icon>
+      </ion-button>
+    </ion-buttons>
+  </ion-toolbar>
+</ion-header>
+
+<ion-content [fullscreen]="true" class="users-page">
+  <ion-refresher slot="fixed" (ionRefresh)="loadUsers($event)">
+    <ion-refresher-content></ion-refresher-content>
+  </ion-refresher>
+
+  <main class="users-shell">
+    <section class="page-heading">
+      <div>
+        <p class="eyebrow">Administración</p>
+        <h1>Usuarios del Oráculo</h1>
+        <p>Gestiona administradores y usuarios con acceso a las predicciones.</p>
+      </div>
+      <ion-button class="create-button" (click)="openCreateForm()">
+        <ion-icon name="person-add-outline" slot="start"></ion-icon>
+        Nuevo usuario
+      </ion-button>
+    </section>
+
+    @if (errorMessage) {
+      <p class="feedback error">{{ errorMessage }}</p>
+    }
+    @if (successMessage) {
+      <p class="feedback success">{{ successMessage }}</p>
+    }
+
+    @if (showForm) {
+    <section class="editor-card">
+      <div class="editor-heading">
+        <div>
+          <p class="eyebrow">{{ editingUserId === null ? 'Alta' : 'Edición' }}</p>
+          <h2>{{ editingUserId === null ? 'Crear usuario' : 'Actualizar usuario' }}</h2>
+        </div>
+        <ion-button fill="clear" color="medium" (click)="cancelForm()" aria-label="Cerrar formulario">
+          <ion-icon name="close-outline" slot="icon-only"></ion-icon>
+        </ion-button>
+      </div>
+
+      <div class="form-grid">
+        <ion-input label="Nombre completo" labelPlacement="stacked" fill="outline"
+          name="fullName" [(ngModel)]="form.fullName"></ion-input>
+        <ion-input label="Usuario" labelPlacement="stacked" fill="outline"
+          name="username" [(ngModel)]="form.username"></ion-input>
+        <ion-input label="Correo" labelPlacement="stacked" fill="outline" type="email"
+          name="email" [(ngModel)]="form.email"></ion-input>
+        <ion-input [label]="editingUserId === null ? 'Contraseña' : 'Nueva contraseña (opcional)'"
+          labelPlacement="stacked" fill="outline" type="password"
+          name="password" [(ngModel)]="form.password"></ion-input>
+        <ion-select label="Rol" labelPlacement="stacked" fill="outline"
+          name="role" [(ngModel)]="form.role">
+          <ion-select-option value="user">Usuario</ion-select-option>
+          <ion-select-option value="admin">Administrador</ion-select-option>
+        </ion-select>
+        <ion-select label="Estado" labelPlacement="stacked" fill="outline"
+          name="status" [(ngModel)]="form.status">
+          <ion-select-option value="active">Activo</ion-select-option>
+          <ion-select-option value="inactive">Inactivo</ion-select-option>
+          <ion-select-option value="blocked">Bloqueado</ion-select-option>
+        </ion-select>
+      </div>
+
+      <div class="form-actions">
+        <ion-button fill="clear" color="medium" (click)="cancelForm()">Cancelar</ion-button>
+        <ion-button (click)="saveUser()" [disabled]="isSaving">
+          {{ isSaving ? 'Guardando…' : 'Guardar usuario' }}
+        </ion-button>
+      </div>
+    </section>
+    }
+
+    @if (isLoading) {
+    <div class="loading-state">
+      <ion-spinner name="crescent"></ion-spinner>
+      <span>Cargando usuarios…</span>
+    </div>
+    }
+
+    @if (!isLoading) {
+    <section class="users-grid">
+      @for (user of users; track user.id) {
+      <article class="user-card">
+        <div class="user-card__top">
+          <div class="avatar">{{ (user.fullName || user.username).charAt(0).toUpperCase() }}</div>
+          <div class="identity">
+            <h2>{{ user.fullName }}</h2>
+            <p>@{{ user.username }}</p>
+          </div>
+          <ion-badge [color]="statusColor(user.status)">{{ statusLabel(user.status) }}</ion-badge>
+        </div>
+
+        <div class="user-meta">
+          <p><ion-icon name="mail-outline"></ion-icon>{{ user.email }}</p>
+          <p><ion-icon name="shield-checkmark-outline"></ion-icon>{{ roleLabel(user.role) }}</p>
+        </div>
+
+        <div class="user-actions">
+          <ion-button size="small" fill="outline" (click)="openEditForm(user)">
+            <ion-icon name="create-outline" slot="start"></ion-icon>Editar
+          </ion-button>
+          <ion-button size="small" fill="clear" color="danger" (click)="deleteUser(user)">
+            <ion-icon name="trash-outline" slot="start"></ion-icon>Eliminar
+          </ion-button>
+        </div>
+      </article>
+      }
+    </section>
+    }
+
+    @if (!isLoading && users.length === 0) {
+    <section class="empty-state">
+      <ion-icon name="people-outline"></ion-icon>
+      <h2>No hay usuarios para mostrar</h2>
+      <p>Crea el primer usuario desde el botón superior.</p>
+    </section>
+    }
+  </main>
+</ion-content>

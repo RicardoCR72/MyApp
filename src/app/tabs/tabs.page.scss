@@ -1,0 +1,17 @@
+:host {
+  --oracle-pink: #ef5b78;
+  --oracle-violet: #8f63df;
+}
+
+ion-tab-bar {
+  --background: #171b2b;
+  --border: 1px solid rgba(255, 255, 255, 0.08);
+  padding: 5px 4px max(5px, env(safe-area-inset-bottom));
+}
+
+ion-tab-button {
+  --color: #7f879f;
+  --color-selected: var(--oracle-pink);
+  --ripple-color: rgba(239, 91, 120, 0.2);
+  font-size: 11px;
+}

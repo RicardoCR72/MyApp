@@ -1,0 +1,38 @@
+<ion-header class="ion-no-border">
+  <ion-toolbar>
+    <ion-title>Mi sesión</ion-title>
+  </ion-toolbar>
+</ion-header>
+
+<ion-content [fullscreen]="true" class="account-page">
+  <main class="account-shell">
+    <section class="welcome-card">
+      <div class="avatar">{{ (currentUser?.fullName || currentUser?.username || 'U').charAt(0).toUpperCase() }}</div>
+      <div>
+        <p class="eyebrow">Sesión activa</p>
+        <h1>{{ currentUser?.fullName || 'Usuario del Oráculo' }}</h1>
+        <p>{{ currentUser?.email }}</p>
+      </div>
+    </section>
+
+    <section class="details-card">
+      <div class="detail-row">
+        <span>Usuario</span>
+        <strong>{{ currentUser?.username }}</strong>
+      </div>
+      <div class="detail-row">
+        <span>Rol</span>
+        <ion-badge color="tertiary">{{ currentUser?.role === 'admin' ? 'Administrador' : 'Usuario' }}</ion-badge>
+      </div>
+      <div class="detail-row">
+        <span>Acceso</span>
+        <ion-badge color="success">Autorizado</ion-badge>
+      </div>
+    </section>
+
+    <ion-button expand="block" fill="outline" color="danger" (click)="logout()">
+      <ion-icon name="log-out-outline" slot="start"></ion-icon>
+      Cerrar sesión
+    </ion-button>
+  </main>
+</ion-content>

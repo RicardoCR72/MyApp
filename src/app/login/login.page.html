@@ -1,0 +1,92 @@
+<ion-content [fullscreen]="true" class="login-page">
+  <div class="brand" aria-hidden="true">
+    <img src="https://s3-us-west-2.amazonaws.com/s.cdpn.io/217233/logo.png" alt="" />
+  </div>
+
+  <section
+    class="login"
+    [class.test]="isTesting"
+    [class.testtwo]="isMoved"
+    aria-labelledby="login-title"
+  >
+    @if (showLoginContent) {
+    <div class="login_content">
+      <div class="login_title">
+        <span id="login-title">Inicia sesión en tu cuenta</span>
+      </div>
+
+      <form class="login_fields" (ngSubmit)="login()" novalidate>
+        <div class="login_fields__user">
+          <div class="icon" [class.focused]="usernameFocused">
+            <img src="https://s3-us-west-2.amazonaws.com/s.cdpn.io/217233/user_icon_copy.png" alt="" />
+          </div>
+          <input
+            type="text"
+            name="username"
+            placeholder="Usuario o correo"
+            autocomplete="username"
+            [(ngModel)]="username"
+            (focus)="usernameFocused = true"
+            (blur)="usernameFocused = false"
+            [disabled]="isAnimating"
+            required
+          />
+          <div class="validation" [class.visible]="username.length > 0">
+            <img src="https://s3-us-west-2.amazonaws.com/s.cdpn.io/217233/tick.png" alt="" />
+          </div>
+        </div>
+
+        <div class="login_fields__password">
+          <div class="icon" [class.focused]="passwordFocused">
+            <img src="https://s3-us-west-2.amazonaws.com/s.cdpn.io/217233/lock_icon_copy.png" alt="" />
+          </div>
+          <input
+            type="password"
+            name="password"
+            placeholder="Contraseña"
+            autocomplete="current-password"
+            [(ngModel)]="password"
+            (focus)="passwordFocused = true"
+            (blur)="passwordFocused = false"
+            [disabled]="isAnimating"
+            required
+          />
+          <div class="validation" [class.visible]="password.length > 0">
+            <img src="https://s3-us-west-2.amazonaws.com/s.cdpn.io/217233/tick.png" alt="" />
+          </div>
+        </div>
+
+        @if (errorMessage) {
+        <p class="login_error" role="alert">
+          {{ errorMessage }}
+        </p>
+        }
+
+        <div class="login_fields__submit">
+          <button type="submit" [disabled]="isAnimating">
+            {{ isAnimating ? 'Validando…' : 'Iniciar sesión' }}
+          </button>
+        </div>
+      </form>
+
+      <div class="disclaimer">
+        <p>Utiliza las credenciales registradas en la base de datos.</p>
+      </div>
+    </div>
+    }
+
+    @if (showSuccess) {
+    <div class="success">
+      <h2>Autenticación correcta</h2>
+      <p>Bienvenido</p>
+    </div>
+    }
+  </section>
+
+  <section class="authent" [class.visible]="showAuthenticating" aria-live="polite">
+    <img src="https://s3-us-west-2.amazonaws.com/s.cdpn.io/217233/puff.svg" alt="" />
+    <p>Validando credenciales…</p>
+  </section>
+
+  <div class="love"><p>MiApp · Ionic Angular</p></div>
+</ion-content>

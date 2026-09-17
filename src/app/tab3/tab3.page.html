@@ -1,0 +1,84 @@
+<ion-header class="ion-no-border">
+  <ion-toolbar>
+    <ion-title>Oráculo MLB</ion-title>
+  </ion-toolbar>
+</ion-header>
+
+<ion-content [fullscreen]="true" class="oracle-page">
+  <main class="oracle-shell">
+    <section class="hero-card">
+      <div class="hero-copy">
+        <p class="eyebrow">Modelo predictivo · MLB</p>
+        <h1>Bienvenido al Oráculo, {{ currentUser?.fullName || currentUser?.username }}</h1>
+        <p class="hero-description">
+          Un panel enfocado en probabilidades Over/Under de primeras cinco entradas,
+          construido con abridores, lineups, clima y contexto del partido.
+        </p>
+        <div class="hero-actions">
+          <ion-button disabled>
+            <ion-icon name="sparkles-outline" slot="start"></ion-icon>
+            Predicciones del día
+          </ion-button>
+          <span>La conexión con el modelo Python será la siguiente etapa.</span>
+        </div>
+      </div>
+      <div class="baseball-orbit" aria-hidden="true">
+        <div class="orbit-ring"></div>
+        <ion-icon name="baseball-outline"></ion-icon>
+      </div>
+    </section>
+
+    <section class="status-grid">
+      <article class="status-card">
+        <div class="status-icon ready"><ion-icon name="shield-checkmark-outline"></ion-icon></div>
+        <div><span>Autenticación</span><strong>Operativa</strong></div>
+      </article>
+      <article class="status-card">
+        <div class="status-icon ready"><ion-icon name="people-outline"></ion-icon></div>
+        <div><span>Usuarios</span><strong>CRUD conectado</strong></div>
+      </article>
+      <article class="status-card">
+        <div class="status-icon pending"><ion-icon name="analytics-outline"></ion-icon></div>
+        <div><span>Modelo MLB</span><strong>Próxima integración</strong></div>
+      </article>
+    </section>
+
+    <section class="section-heading">
+      <div>
+        <p class="eyebrow">Mercados del modelo</p>
+        <h2>Probabilidades F5 disponibles</h2>
+      </div>
+      <ion-badge color="tertiary">Temporada 2026</ion-badge>
+    </section>
+
+    <section class="markets-grid">
+      @for (market of markets; track market.line) {
+      <article class="market-card">
+        <div class="market-line">{{ market.line }}</div>
+        <p class="calibration">{{ market.calibration }}</p>
+        <p>{{ market.description }}</p>
+        <div class="probability-placeholder">
+          <span>OVER</span><strong>—</strong>
+          <span>UNDER</span><strong>—</strong>
+        </div>
+      </article>
+      }
+    </section>
+
+    <section class="pipeline-card">
+      <div>
+        <p class="eyebrow">Flujo previsto</p>
+        <h2>Del juego a la decisión</h2>
+      </div>
+      <div class="pipeline">
+        <div><ion-icon name="cloud-download-outline"></ion-icon><span>Datos MLB</span></div>
+        <ion-icon class="arrow" name="arrow-forward-outline"></ion-icon>
+        <div><ion-icon name="hardware-chip-outline"></ion-icon><span>Modelo F5</span></div>
+        <ion-icon class="arrow" name="arrow-forward-outline"></ion-icon>
+        <div><ion-icon name="options-outline"></ion-icon><span>Calibración</span></div>
+        <ion-icon class="arrow" name="arrow-forward-outline"></ion-icon>
+        <div><ion-icon name="phone-portrait-outline"></ion-icon><span>Aplicación</span></div>
+      </div>
+    </section>
+  </main>
+</ion-content>
