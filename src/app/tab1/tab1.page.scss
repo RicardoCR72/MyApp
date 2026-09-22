@@ -87,3 +87,23 @@ h1 {
 .detail-row span {
   color: var(--muted);
 }
+
+.persistence-card {
+  display: grid;
+  gap: 5px;
+  margin: 0 0 18px;
+  padding: 14px 16px;
+  border: 1px solid rgba(45, 211, 111, 0.35);
+  border-radius: 14px;
+  background: rgba(45, 211, 111, 0.1);
+  color: #e8fff1;
+}
+
+.persistence-card strong {
+  color: #55e891;
+}
+
+.persistence-card span {
+  color: #b9c8bf;
+  font-size: 13px;
+}

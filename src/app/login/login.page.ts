@@ -25,6 +25,12 @@ export class LoginPage {
   isAnimating = false;
   errorMessage = '';
 
+  ionViewWillEnter(): void {
+    if (this.authService.isAuthenticated()) {
+      void this.router.navigateByUrl('/tabs/tab1', { replaceUrl: true });
+    }
+  }
+
   async login(): Promise<void> {
     if (this.isAnimating) return;
 

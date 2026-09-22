@@ -21,6 +21,7 @@ Centralizar en una interfaz sencilla los resultados del modelo predictivo **Orá
 - PHP 8.2 con PDO
 - MariaDB/MySQL
 - Capacitor
+- Capacitor Preferences para persistencia local de la sesión
 
 ## Estructura relevante
 
@@ -49,6 +50,21 @@ backend/php-api/
 npm install
 ionic serve
 ```
+
+Después de instalar dependencias o al preparar Android/iOS, sincronizar Capacitor:
+
+```bash
+npx cap sync
+```
+
+## Persistencia
+
+- `users` y `auth_tokens` permanecen en MySQL/MariaDB mediante la API PHP.
+- El token, el usuario autenticado y la expiración se almacenan con Capacitor Preferences.
+- `AuthService.initialize()` restaura la sesión antes de evaluar las rutas protegidas.
+- Una sesión vencida o el botón **Cerrar sesión** eliminan los valores persistentes.
+
+La guía de demostración está en [`docs/persistencia-preferences.md`](docs/persistencia-preferences.md).
 
 La URL de la API se configura en:
 

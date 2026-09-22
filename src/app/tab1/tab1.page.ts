@@ -13,13 +13,15 @@ export class Tab1Page {
   private readonly router = inject(Router);
 
   currentUser: AuthUser | null = null;
+  sessionRestored = false;
 
   ionViewWillEnter(): void {
     this.currentUser = this.authService.getCurrentUser();
+    this.sessionRestored = this.authService.wasRestoredFromPreferences();
   }
 
-  logout(): void {
-    this.authService.logout();
-    void this.router.navigateByUrl('/login', { replaceUrl: true });
+  async logout(): Promise<void> {
+    await this.authService.logout();
+    await this.router.navigateByUrl('/login', { replaceUrl: true });
   }
 }
