@@ -20,6 +20,7 @@ import {
 import { Tab2Page } from './tab2.page';
 
 import { Tab2PageRoutingModule } from './tab2-routing.module';
+import { ApiErrorModalModule } from '../shared/api-error-modal/api-error-modal.module';
 
 @NgModule({
   imports: [
@@ -39,6 +40,7 @@ import { Tab2PageRoutingModule } from './tab2-routing.module';
     IonSelectOption,
     IonSpinner,
     IonBadge,
+    ApiErrorModalModule,
     Tab2PageRoutingModule
   ],
   declarations: [Tab2Page]

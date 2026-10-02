@@ -13,9 +13,9 @@ input::placeholder { color: #697089; }
   position: absolute;
   inset: 20px 0 0;
   width: 240px;
-  height: 300px;
+  height: 480px;
   margin: auto;
-  padding: 100px 40px 40px;
+  padding: 82px 40px 40px;
   box-sizing: content-box;
   border-top: 2px solid #d8312a;
   background: linear-gradient(45deg, #35394a 0%, #1f222e 100%);
@@ -30,7 +30,7 @@ input::placeholder { color: #697089; }
     filter 0.5s ease;
 
   &_title {
-    height: 60px;
+    height: 52px;
     color: #afb1be;
     font-size: 16px;
     text-align: left;
@@ -40,7 +40,7 @@ input::placeholder { color: #697089; }
     position: absolute;
     left: 0;
     width: 100%;
-    height: 208px;
+    height: 390px;
 
     .icon {
       position: absolute;
@@ -51,6 +51,17 @@ input::placeholder { color: #697089; }
       transition: opacity 0.2s ease;
 
       &.focused { opacity: 1; }
+    }
+
+    .server-icon {
+      display: grid;
+      width: 22px;
+      height: 22px;
+      place-items: center;
+      color: #8fd8ff;
+      font-size: 9px;
+      font-weight: 900;
+      letter-spacing: 0.08em;
     }
 
     input[type='text'],
@@ -75,11 +86,12 @@ input::placeholder { color: #697089; }
     }
 
     input[type='password'] { color: #dc6180; }
-    &__user, &__password { position: relative; }
+    &__server input { color: #8fd8ff; }
+    &__server, &__user, &__password { position: relative; }
 
     &__submit {
       position: relative;
-      top: 35px;
+      top: 18px;
       width: 80%;
       margin: auto;
 
@@ -127,14 +139,40 @@ input::placeholder { color: #697089; }
 }
 
 .login_error {
-  position: absolute;
-  top: 82px;
-  right: 36px;
-  left: 36px;
-  margin: 0;
+  position: relative;
+  margin: 8px 36px 0;
   color: #ff9aae;
   font-size: 11px;
   text-align: center;
+}
+
+.connection-status {
+  margin: 8px 20px 0;
+  padding: 9px 12px;
+  color: #aeb4ca;
+  background: rgba(18, 21, 32, 0.7);
+  border: 1px solid #4a506a;
+  border-radius: 9px;
+  font-size: 9px;
+
+  &.ok { border-color: #55d6a2; }
+  &.failed { border-color: #ff6b88; }
+  .status-heading { display: flex; align-items: center; gap: 7px; margin-bottom: 5px; }
+  .status-dot { width: 7px; height: 7px; border-radius: 50%; background: #ffca68; }
+  &.ok .status-dot { background: #55d6a2; }
+  &.failed .status-dot { background: #ff6b88; }
+  p { margin: 2px 0; overflow-wrap: anywhere; }
+  details { margin-top: 6px; }
+  summary { color: #8fd8ff; cursor: pointer; }
+  span { color: #7d849d; }
+  pre {
+    max-height: 72px;
+    margin: 3px 0 6px;
+    overflow: auto;
+    color: #c9d5ff;
+    white-space: pre-wrap;
+    overflow-wrap: anywhere;
+  }
 }
 
 .login.test {

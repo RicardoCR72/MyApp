@@ -4,15 +4,23 @@ import { FormsModule } from '@angular/forms';
 import {
   IonBadge,
   IonButton,
+  IonButtons,
   IonContent,
   IonHeader,
   IonIcon,
+  IonLabel,
+  IonRefresher,
+  IonRefresherContent,
+  IonSegment,
+  IonSegmentButton,
+  IonSpinner,
   IonTitle,
   IonToolbar
 } from '@ionic/angular';
 import { Tab3Page } from './tab3.page';
 
 import { Tab3PageRoutingModule } from './tab3-routing.module';
+import { ApiErrorModalModule } from '../shared/api-error-modal/api-error-modal.module';
 
 @NgModule({
   imports: [
@@ -23,8 +31,16 @@ import { Tab3PageRoutingModule } from './tab3-routing.module';
     IonTitle,
     IonContent,
     IonButton,
+    IonButtons,
     IonIcon,
     IonBadge,
+    IonLabel,
+    IonRefresher,
+    IonRefresherContent,
+    IonSegment,
+    IonSegmentButton,
+    IonSpinner,
+    ApiErrorModalModule,
     Tab3PageRoutingModule
   ],
   declarations: [Tab3Page]

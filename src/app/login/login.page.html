@@ -16,6 +16,27 @@
       </div>
 
       <form class="login_fields" (ngSubmit)="login()" novalidate>
+        <div class="login_fields__server">
+          <div class="icon server-icon" [class.focused]="serverFocused" aria-hidden="true">
+            IP
+          </div>
+          <input
+            type="text"
+            name="serverIp"
+            placeholder="IP del servidor · 192.168.1.71"
+            autocomplete="url"
+            inputmode="decimal"
+            [(ngModel)]="serverIp"
+            (focus)="serverFocused = true"
+            (blur)="serverFocused = false"
+            [disabled]="isAnimating"
+            required
+          />
+          <div class="validation" [class.visible]="serverIp.length > 0">
+            <img src="https://s3-us-west-2.amazonaws.com/s.cdpn.io/217233/tick.png" alt="" />
+          </div>
+        </div>
+
         <div class="login_fields__user">
           <div class="icon" [class.focused]="usernameFocused">
             <img src="https://s3-us-west-2.amazonaws.com/s.cdpn.io/217233/user_icon_copy.png" alt="" />
@@ -56,6 +77,41 @@
           </div>
         </div>
 
+        <section
+          class="connection-status"
+          [class.ok]="connectionDiagnostic?.ok"
+          [class.failed]="connectionDiagnostic && !connectionDiagnostic.ok"
+          aria-live="polite"
+        >
+          <div class="status-heading">
+            <span class="status-dot"></span>
+            <strong>
+              @if (connectionDiagnostic) {
+                {{ connectionDiagnostic.ok ? 'Acceso a la API correcto' : 'Error de conexión a la API' }}
+              } @else {
+                Listo para conectar
+              }
+            </strong>
+          </div>
+          <p>Red: {{ connectionDiagnostic?.networkStatus || currentNetworkStatus }}</p>
+          <p>IP destino: {{ connectionDiagnostic?.ip || serverIp || '192.168.1.71' }}</p>
+          <p>Solicitud: {{ connectionDiagnostic?.url || destinationPreview }}</p>
+          @if (connectionDiagnostic) {
+            <p>HTTP: {{ connectionDiagnostic.httpStatus ?? 'Sin respuesta' }} {{ connectionDiagnostic.statusText }}</p>
+            <details>
+              <summary>Payload y cabeceras</summary>
+              <span>Payload</span>
+              <pre>{{ connectionDiagnostic.requestPayload | json }}</pre>
+              <span>Respuesta</span>
+              <pre>{{ connectionDiagnostic.responsePayload | json }}</pre>
+              <span>Cabeceras enviadas</span>
+              <pre>{{ connectionDiagnostic.requestHeaders | json }}</pre>
+              <span>Cabeceras recibidas</span>
+              <pre>{{ connectionDiagnostic.responseHeaders | json }}</pre>
+            </details>
+          }
+        </section>
+
         @if (errorMessage) {
         <p class="login_error" role="alert">
           {{ errorMessage }}
@@ -70,7 +126,9 @@
       </form>
 
       <div class="disclaimer">
-        <p>Utiliza las credenciales registradas en la base de datos.</p>
+        <p>
+          Configuración JSON persistente · Apache 80 · MySQL 3306
+        </p>
       </div>
     </div>
     }

@@ -1,7 +1,9 @@
 import { Component } from '@angular/core';
 import { addIcons } from 'ionicons';
 import {
+  alertCircleOutline,
   analyticsOutline,
+  americanFootballOutline,
   arrowForwardOutline,
   baseballOutline,
   closeOutline,
@@ -30,7 +32,9 @@ import {
 export class AppComponent {
   constructor() {
     addIcons({
+      'alert-circle-outline': alertCircleOutline,
       'analytics-outline': analyticsOutline,
+      'american-football-outline': americanFootballOutline,
       'arrow-forward-outline': arrowForwardOutline,
       'baseball-outline': baseballOutline,
       'close-outline': closeOutline,

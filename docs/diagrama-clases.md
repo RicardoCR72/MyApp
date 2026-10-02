@@ -23,7 +23,9 @@ classDiagram
     }
 
     class Tab3Page {
-        +markets: OracleMarket[]
+        +selectedSport: OracleSport
+        +predictions: OraclePrediction[]
+        +loadPredictions(): Promise~void~
     }
 
     class AuthService {
@@ -39,6 +41,10 @@ classDiagram
         +create(input): Promise~UserRecord~
         +patch(id, input): Promise~UserRecord~
         +remove(id): Promise~DeleteResponse~
+    }
+
+    class OracleService {
+        +getPredictions(sport, filters): Promise~OraclePrediction[]~
     }
 
     class AuthUser {
@@ -60,18 +66,31 @@ classDiagram
         +status: UserStatus
     }
 
+    class OraclePrediction {
+        <<interface>>
+        +sport: OracleSport
+        +marketType: string
+        +line: number
+        +selection: string
+        +probability: number
+        +edge: number
+        +pickStatus: string
+    }
+
     LoginPage --> AuthService : autentica
     Tab1Page --> AuthService : consulta sesión
     Tab2Page --> UserService : administra
     Tab3Page --> AuthService : personaliza
+    Tab3Page --> OracleService : consulta
     AuthService ..> AuthUser : utiliza
     UserService ..> UserRecord : utiliza
+    OracleService ..> OraclePrediction : utiliza
 ```
 
 ## Responsabilidades
 
 - `AuthService`: realiza el inicio de sesión, persiste el token y controla el estado de autenticación.
 - `UserService`: encapsula las llamadas Axios al endpoint `users.php`.
+- `OracleService`: consulta con Axios las predicciones MLB y NFL de `predictions.php`.
 - `Tab2Page`: administra el estado del formulario y presenta las operaciones CRUD.
 - `AuthUser` y `UserRecord`: establecen contratos tipados entre la interfaz, los servicios y la API.
-

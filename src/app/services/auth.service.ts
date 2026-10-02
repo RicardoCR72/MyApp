@@ -1,7 +1,8 @@
-import { Injectable } from '@angular/core';
+import { inject, Injectable } from '@angular/core';
 import { Preferences } from '@capacitor/preferences';
-import axios, { AxiosInstance } from 'axios';
-import { environment } from '../../environments/environment';
+import axios from 'axios';
+import { ApiDiagnosticService } from './api-diagnostic.service';
+import { ConnectionService } from './connection.service';
 
 export interface LoginCredentials { username: string; password: string; }
 export interface AuthUser {
@@ -30,12 +31,8 @@ export class AuthService {
   private currentUser: AuthUser | null = null;
   private expiresAt: string | null = null;
   private restoredFromPreferences = false;
-
-  private readonly http: AxiosInstance = axios.create({
-    baseURL: environment.apiUrl,
-    timeout: 10000,
-    headers: { 'Content-Type': 'application/json', Accept: 'application/json' }
-  });
+  private readonly connectionService = inject(ConnectionService);
+  private readonly diagnosticService = inject(ApiDiagnosticService);
 
   /**
    * Restaura la sesión antes de que Angular evalúe las rutas protegidas.
@@ -61,7 +58,30 @@ export class AuthService {
   }
 
   async login(credentials: LoginCredentials): Promise<LoginResponse> {
-    const { data } = await this.http.post<LoginResponse>('/login.php', credentials);
+    const url = this.connectionService.endpoint('/login.php');
+    const headers = { 'Content-Type': 'application/json', Accept: 'application/json' };
+    let response;
+    try {
+      response = await axios.post<LoginResponse>(url, credentials, { timeout: 10000, headers });
+    } catch (error: unknown) {
+      this.diagnosticService.captureError(error, {
+        method: 'POST', url, requestPayload: credentials, requestHeaders: headers
+      });
+      throw error;
+    }
+
+    const { data } = response;
+    this.diagnosticService.captureSuccess({
+      method: 'POST',
+      url,
+      status: response.status,
+      statusText: response.statusText,
+      requestPayload: credentials,
+      responsePayload: { ...data, token: data.token ? '[TOKEN RECIBIDO]' : null },
+      requestHeaders: headers,
+      responseHeaders: response.headers,
+      message: data.message || 'Acceso correcto.'
+    });
     if (!data.success || !data.token || !data.user) {
       throw new Error(data.message || 'La API devolvió una respuesta inválida.');
     }

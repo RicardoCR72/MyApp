@@ -1,0 +1,25 @@
+:host { display: block; }
+ion-content { --background: #101421; }
+.source-shell { max-width: 920px; margin: 0 auto; padding: 24px 18px 100px; color: #eef1ff; }
+.hero { margin-bottom: 18px; }
+.hero h1 { margin: 5px 0 8px; font-size: 30px; }
+.hero p:last-child { color: #969db7; }
+.eyebrow { margin: 0; color: #bd72f1; font-size: 11px; font-weight: 800; letter-spacing: .12em; text-transform: uppercase; }
+.editor-card, .json-card, .source-grid article {
+  padding: 18px;
+  border: 1px solid #303650;
+  border-radius: 16px;
+  background: #1a1f30;
+}
+.editor-card { display: grid; gap: 12px; }
+.source-grid { display: grid; grid-template-columns: repeat(2, minmax(0, 1fr)); gap: 12px; margin: 16px 0; }
+.source-grid .wide { grid-column: 1 / -1; }
+.source-grid span { display: block; margin-bottom: 7px; color: #8d95ae; font-size: 11px; text-transform: uppercase; }
+.source-grid strong { overflow-wrap: anywhere; }
+.json-card { margin-top: 14px; }
+.json-card h2 { margin: 4px 0 12px; }
+.json-card pre { margin: 0; overflow: auto; color: #9fd6ff; white-space: pre-wrap; overflow-wrap: anywhere; }
+.json-card > p { color: #a7aec3; overflow-wrap: anywhere; }
+.feedback { margin: 0; color: #59d6a5; font-size: 13px; }
+.feedback.error { color: #ff718d; }
+@media (max-width: 560px) { .source-grid { grid-template-columns: 1fr; } .source-grid .wide { grid-column: auto; } }

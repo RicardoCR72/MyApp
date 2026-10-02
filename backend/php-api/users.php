@@ -27,6 +27,9 @@ header('Access-Control-Allow-Headers: Content-Type, Authorization, X-Requested-W
 header('Access-Control-Max-Age: 86400');
 header('Content-Type: application/json; charset=utf-8');
 header('Cache-Control: no-store');
+if (($_SERVER['HTTP_ACCESS_CONTROL_REQUEST_PRIVATE_NETWORK'] ?? '') === 'true') {
+    header('Access-Control-Allow-Private-Network: true');
+}
 
 $method = strtoupper($_SERVER['REQUEST_METHOD'] ?? 'GET');
 

@@ -1,283 +1,352 @@
 :host {
-  --page-bg: #0d111c;
-  --card-bg: #171d2d;
-  --muted: #929ab2;
-  --accent: #ef5b78;
-  --violet: #8f63df;
+  --page-bg: #080d16;
+  --card-bg: #121a27;
+  --card-soft: #182232;
+  --muted: #8e9bad;
+  --mlb: #ff657f;
+  --nfl: #b7ff3c;
 }
 
 ion-toolbar {
-  --background: #151a29;
-  --color: #f6f7fb;
+  --background: #0e1521;
+  --color: #f6f8fb;
 }
 
 .oracle-page {
   --background: var(--page-bg);
-  --color: #f6f7fb;
+  --color: #f6f8fb;
 }
 
 .oracle-shell {
-  width: min(1160px, 100%);
+  width: min(1180px, 100%);
   margin: 0 auto;
-  padding: 24px 18px 52px;
+  padding: 22px 16px 56px;
 }
 
 .hero-card {
-  position: relative;
   display: grid;
-  grid-template-columns: minmax(0, 1.4fr) minmax(220px, 0.6fr);
+  grid-template-columns: minmax(0, 1fr) auto;
   align-items: center;
-  min-height: 330px;
+  gap: 24px;
   overflow: hidden;
-  padding: clamp(26px, 6vw, 58px);
-  border: 1px solid rgba(255, 255, 255, 0.1);
-  border-radius: 28px;
+  padding: clamp(25px, 5vw, 50px);
+  border: 1px solid rgba(255, 255, 255, 0.08);
+  border-radius: 26px;
   background:
-    radial-gradient(circle at 80% 25%, rgba(143, 99, 223, 0.35), transparent 28%),
-    radial-gradient(circle at 15% 90%, rgba(239, 91, 120, 0.2), transparent 33%),
-    linear-gradient(135deg, #1d2336, #131827);
-  box-shadow: 0 28px 70px rgba(0, 0, 0, 0.3);
+    radial-gradient(circle at 88% 18%, rgba(183, 255, 60, 0.14), transparent 25%),
+    radial-gradient(circle at 10% 100%, rgba(255, 101, 127, 0.18), transparent 36%),
+    linear-gradient(135deg, #172132, #0e1521);
+  box-shadow: 0 24px 70px rgba(0, 0, 0, 0.32);
 }
 
-.hero-copy {
-  position: relative;
-  z-index: 2;
+.hero-card h1 {
+  max-width: 780px;
+  margin: 5px 0 12px;
+  font-size: clamp(28px, 5vw, 48px);
+  line-height: 1.08;
+}
+
+.hero-card p:last-child {
+  max-width: 720px;
+  margin: 0;
+  color: #a9b3c1;
+  line-height: 1.6;
+}
+
+.hero-card > ion-icon {
+  color: #fff;
+  filter: drop-shadow(0 12px 26px rgba(183, 255, 60, 0.2));
+  font-size: clamp(74px, 12vw, 126px);
 }
 
 .eyebrow {
-  margin: 0 0 8px;
-  color: #ff8198;
+  margin: 0 0 7px;
+  color: var(--nfl);
   font-size: 11px;
-  font-weight: 800;
+  font-weight: 850;
   letter-spacing: 0.14em;
   text-transform: uppercase;
 }
 
-h1,
-h2,
-p {
-  margin-top: 0;
+ion-segment {
+  max-width: 430px;
+  margin: 20px auto;
+  --background: #111a27;
 }
 
-h1 {
-  max-width: 720px;
-  margin-bottom: 16px;
-  font-size: clamp(31px, 5vw, 54px);
-  line-height: 1.04;
+ion-segment-button {
+  --color: #9aa7b8;
+  --color-checked: #081006;
+  --indicator-color: var(--nfl);
+  font-weight: 850;
 }
 
-.hero-description {
-  max-width: 680px;
-  color: #b2b8ca;
-  font-size: clamp(15px, 2vw, 18px);
-  line-height: 1.65;
-}
-
-.hero-actions {
-  display: flex;
-  align-items: center;
-  gap: 14px;
-  margin-top: 24px;
-}
-
-.hero-actions ion-button {
-  --background: linear-gradient(135deg, var(--accent), var(--violet));
-  --border-radius: 13px;
-  opacity: 1;
-}
-
-.hero-actions span {
-  max-width: 260px;
-  color: var(--muted);
-  font-size: 12px;
-}
-
-.baseball-orbit {
-  position: relative;
-  display: grid;
-  width: 220px;
-  height: 220px;
-  place-items: center;
-  justify-self: center;
-}
-
-.baseball-orbit ion-icon {
-  color: #fff;
-  filter: drop-shadow(0 14px 25px rgba(239, 91, 120, 0.38));
-  font-size: 112px;
-}
-
-.orbit-ring {
-  position: absolute;
-  inset: 10px;
-  border: 1px solid rgba(255, 255, 255, 0.18);
-  border-radius: 50%;
-  box-shadow: 0 0 0 24px rgba(255, 255, 255, 0.025), 0 0 0 52px rgba(255, 255, 255, 0.018);
-}
-
-.status-grid {
+.summary-grid {
   display: grid;
   grid-template-columns: repeat(3, 1fr);
-  gap: 14px;
-  margin: 18px 0 36px;
+  gap: 12px;
+  margin-bottom: 32px;
 }
 
-.status-card,
-.market-card,
-.pipeline-card {
+.summary-grid article {
+  padding: 17px 19px;
   border: 1px solid rgba(255, 255, 255, 0.08);
-  border-radius: 18px;
+  border-radius: 16px;
   background: var(--card-bg);
 }
 
-.status-card {
-  display: flex;
-  align-items: center;
-  gap: 13px;
-  padding: 16px;
-}
-
-.status-card span {
+.summary-grid span,
+.metrics-grid span,
+.probability-row span {
   display: block;
-  margin-bottom: 4px;
+  margin-bottom: 5px;
   color: var(--muted);
-  font-size: 12px;
+  font-size: 11px;
+  font-weight: 750;
+  letter-spacing: 0.04em;
+  text-transform: uppercase;
 }
 
-.status-icon {
-  display: grid;
-  width: 42px;
-  height: 42px;
-  place-items: center;
-  border-radius: 13px;
-  font-size: 21px;
-}
-
-.status-icon.ready {
-  color: #72ddb0;
-  background: rgba(45, 211, 111, 0.11);
-}
-
-.status-icon.pending {
-  color: #c0a5fa;
-  background: rgba(143, 99, 223, 0.14);
+.summary-grid strong {
+  font-size: 20px;
 }
 
 .section-heading {
   display: flex;
   align-items: end;
   justify-content: space-between;
-  gap: 15px;
-  margin-bottom: 14px;
+  gap: 14px;
+  margin: 12px 0 15px;
 }
 
-.section-heading h2,
-.pipeline-card h2 {
-  margin-bottom: 0;
-  font-size: clamp(22px, 4vw, 30px);
+.section-heading h2 {
+  margin: 0;
+  font-size: clamp(24px, 4vw, 32px);
 }
 
-.markets-grid {
+.predictions-grid {
   display: grid;
-  grid-template-columns: repeat(3, 1fr);
+  grid-template-columns: repeat(2, minmax(0, 1fr));
   gap: 16px;
 }
 
-.market-card {
+.prediction-card {
   padding: 20px;
+  border: 1px solid rgba(255, 255, 255, 0.08);
+  border-radius: 20px;
+  background: linear-gradient(145deg, #151e2d, #101722);
+  box-shadow: 0 16px 40px rgba(0, 0, 0, 0.2);
 }
 
-.market-line {
-  margin-bottom: 6px;
-  font-size: 28px;
-  font-weight: 850;
+.card-heading,
+.market-heading {
+  display: flex;
+  align-items: flex-start;
+  justify-content: space-between;
+  gap: 12px;
 }
 
-.calibration {
-  color: #ff8198 !important;
-  font-size: 12px;
-  font-weight: 700;
-  text-transform: uppercase;
-}
-
-.market-card > p:last-of-type {
-  min-height: 62px;
-  color: var(--muted);
-  line-height: 1.5;
-}
-
-.probability-placeholder {
-  display: grid;
-  grid-template-columns: 1fr auto;
-  gap: 8px;
-  padding-top: 14px;
-  border-top: 1px solid rgba(255, 255, 255, 0.08);
-}
-
-.probability-placeholder span {
+.game-date {
+  margin: 0 0 6px;
   color: var(--muted);
   font-size: 11px;
+}
+
+.card-heading h3 {
+  margin: 0;
+  font-size: clamp(18px, 3vw, 23px);
+}
+
+.card-heading h3 span {
+  color: var(--nfl);
+  font-size: 13px;
+}
+
+.market-heading {
+  align-items: center;
+  margin: 18px 0 12px;
+  padding-top: 14px;
+  border-top: 1px solid rgba(255, 255, 255, 0.07);
+}
+
+.market-heading span {
+  display: block;
+  color: var(--muted);
+  font-size: 12px;
+}
+
+.market-heading strong {
+  display: block;
+  margin-top: 4px;
+}
+
+.line-pill {
+  flex: 0 0 auto;
+  padding: 7px 10px;
+  border: 1px solid rgba(183, 255, 60, 0.28);
+  border-radius: 999px;
+  color: var(--nfl);
+  background: rgba(183, 255, 60, 0.07);
+  font-size: 12px;
   font-weight: 800;
 }
 
-.pipeline-card {
-  margin-top: 28px;
-  padding: 24px;
-}
-
-.pipeline {
+.pick-panel {
   display: grid;
-  grid-template-columns: repeat(7, auto);
+  grid-template-columns: 1fr auto;
   align-items: center;
-  justify-content: space-between;
-  gap: 12px;
-  margin-top: 22px;
+  gap: 4px 12px;
+  padding: 15px;
+  border-radius: 15px;
+  background: linear-gradient(135deg, rgba(58, 203, 143, 0.15), rgba(58, 203, 143, 0.05));
 }
 
-.pipeline > div {
-  display: grid;
-  gap: 8px;
-  place-items: center;
-  color: #d8dbea;
-  text-align: center;
+.pick-panel.under {
+  background: linear-gradient(135deg, rgba(108, 145, 255, 0.17), rgba(108, 145, 255, 0.05));
 }
 
-.pipeline > div ion-icon {
-  color: #ff8198;
+.pick-panel span {
+  color: var(--muted);
+  font-size: 11px;
+  text-transform: uppercase;
+}
+
+.pick-panel strong {
+  grid-row: span 2;
   font-size: 26px;
 }
 
-.pipeline .arrow {
-  color: #596077;
+.pick-panel small {
+  color: #d2d9e2;
 }
 
-@media (max-width: 780px) {
+.metrics-grid {
+  display: grid;
+  grid-template-columns: repeat(4, 1fr);
+  gap: 8px;
+  margin-top: 12px;
+}
+
+.metrics-grid > div,
+.probability-row > div {
+  padding: 11px;
+  border-radius: 12px;
+  background: var(--card-soft);
+}
+
+.metrics-grid strong {
+  font-size: 15px;
+}
+
+.probability-row {
+  display: grid;
+  grid-template-columns: 1fr 1fr;
+  gap: 8px;
+  margin-top: 8px;
+}
+
+.probability-row > div {
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+}
+
+.probability-row span {
+  margin: 0;
+}
+
+.prediction-card footer {
+  display: flex;
+  flex-wrap: wrap;
+  gap: 5px 13px;
+  margin-top: 15px;
+  color: var(--muted);
+  font-size: 10px;
+}
+
+.feedback,
+.loading-state,
+.empty-state {
+  border: 1px solid rgba(255, 255, 255, 0.08);
+  border-radius: 18px;
+  background: var(--card-bg);
+}
+
+.feedback {
+  display: flex;
+  align-items: center;
+  gap: 12px;
+  padding: 15px;
+  margin-bottom: 18px;
+}
+
+.feedback.error {
+  border-color: rgba(255, 101, 127, 0.3);
+  color: #ff8da1;
+}
+
+.feedback.warning {
+  border-color: rgba(255, 190, 75, 0.35);
+  color: #ffd78a;
+}
+
+.feedback ion-icon {
+  flex: 0 0 auto;
+  font-size: 24px;
+}
+
+.feedback strong,
+.feedback span {
+  display: block;
+}
+
+.feedback span {
+  margin-top: 3px;
+  color: #c2cad5;
+  font-size: 12px;
+}
+
+.loading-state,
+.empty-state {
+  display: grid;
+  min-height: 210px;
+  place-content: center;
+  justify-items: center;
+  gap: 11px;
+  color: var(--muted);
+  text-align: center;
+}
+
+.empty-state ion-icon {
+  color: var(--nfl);
+  font-size: 48px;
+}
+
+.empty-state h2,
+.empty-state p {
+  margin: 0;
+}
+
+@media (max-width: 800px) {
+  .predictions-grid {
+    grid-template-columns: 1fr;
+  }
+}
+
+@media (max-width: 620px) {
   .hero-card {
     grid-template-columns: 1fr;
   }
 
-  .baseball-orbit {
-    position: absolute;
-    right: -65px;
-    bottom: -65px;
-    opacity: 0.16;
+  .hero-card > ion-icon {
+    display: none;
   }
 
-  .status-grid,
-  .markets-grid {
+  .summary-grid {
     grid-template-columns: 1fr;
   }
 
-  .hero-actions {
-    align-items: flex-start;
-    flex-direction: column;
-  }
-
-  .pipeline {
-    grid-template-columns: 1fr;
-  }
-
-  .pipeline .arrow {
-    transform: rotate(90deg);
+  .metrics-grid {
+    grid-template-columns: repeat(2, 1fr);
   }
 }

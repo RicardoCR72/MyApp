@@ -1,0 +1,59 @@
+<ion-header class="ion-no-border">
+  <ion-toolbar>
+    <ion-title>Orígenes de datos</ion-title>
+    <ion-buttons slot="end">
+      <ion-button (click)="refresh()" aria-label="Recargar configuración">
+        <ion-icon name="refresh-outline" slot="icon-only"></ion-icon>
+      </ion-button>
+    </ion-buttons>
+  </ion-toolbar>
+</ion-header>
+
+<ion-content [fullscreen]="true">
+  <main class="source-shell">
+    <section class="hero">
+      <p class="eyebrow">Configuración persistente</p>
+      <h1>Origen XAMPP</h1>
+      <p>Este mismo JSON construye las solicitudes del Login, Usuarios y Oráculo.</p>
+    </section>
+
+    <section class="editor-card">
+      <ion-input
+        label="IPv4 del equipo con XAMPP"
+        labelPlacement="stacked"
+        fill="outline"
+        inputmode="decimal"
+        placeholder="192.168.1.71"
+        [(ngModel)]="ipDraft"
+      ></ion-input>
+      <ion-button expand="block" (click)="save()">
+        <ion-icon name="save-outline" slot="start"></ion-icon>
+        Guardar origen
+      </ion-button>
+      @if (message) {
+        <p class="feedback" [class.error]="isError">{{ message }}</p>
+      }
+    </section>
+
+    <section class="source-grid">
+      <article><span>Protocolo</span><strong>{{ config.protocol }}</strong></article>
+      <article><span>IP</span><strong>{{ config.ip }}</strong></article>
+      <article><span>Apache</span><strong>Puerto {{ config.apachePort }}</strong></article>
+      <article><span>MySQL</span><strong>Puerto {{ config.mysqlPort }}</strong></article>
+      <article class="wide"><span>Base de la API</span><strong>{{ connectionService.getApiUrl() }}</strong></article>
+    </section>
+
+    <section class="json-card">
+      <div><p class="eyebrow">Preferences</p><h2>JSON guardado</h2></div>
+      <pre>{{ configJson }}</pre>
+    </section>
+
+    @if (lastDiagnostic) {
+      <section class="json-card">
+        <div><p class="eyebrow">Última solicitud</p><h2>{{ lastDiagnostic.method }} · {{ lastDiagnostic.httpStatus ?? 'Sin respuesta' }}</h2></div>
+        <p>{{ lastDiagnostic.url }}</p>
+        <p>{{ lastDiagnostic.networkStatus }}</p>
+      </section>
+    }
+  </main>
+</ion-content>

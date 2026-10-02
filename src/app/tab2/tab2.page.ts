@@ -6,6 +6,8 @@ import {
   UserService,
   UserStatus
 } from '../services/user.service';
+import { ApiDiagnosticService } from '../services/api-diagnostic.service';
+import { ApiErrorModalService } from '../services/api-error-modal.service';
 
 @Component({
   selector: 'app-tab2',
@@ -15,6 +17,8 @@ import {
 })
 export class Tab2Page {
   private readonly userService = inject(UserService);
+  private readonly diagnosticService = inject(ApiDiagnosticService);
+  private readonly errorModalService = inject(ApiErrorModalService);
 
   users: UserRecord[] = [];
   isLoading = false;
@@ -23,6 +27,7 @@ export class Tab2Page {
   editingUserId: number | null = null;
   errorMessage = '';
   successMessage = '';
+  cacheMessage = '';
 
   form: CreateUserInput = this.emptyForm();
 
@@ -33,10 +38,17 @@ export class Tab2Page {
   async loadUsers(event?: { target?: { complete?: () => void } }): Promise<void> {
     this.isLoading = true;
     this.errorMessage = '';
+    this.cacheMessage = '';
     try {
       this.users = await this.userService.list();
+      const state = this.userService.getLoadState();
+      if (state.source === 'cache') {
+        this.cacheMessage = `Sin conexión con la API. Mostrando usuarios guardados el ${this.formatCacheDate(state.savedAt)}.`;
+        await this.errorModalService.present(this.diagnosticService.getLast());
+      }
     } catch (error: unknown) {
       this.errorMessage = this.userService.getErrorMessage(error);
+      await this.errorModalService.present(this.diagnosticService.getLast());
     } finally {
       this.isLoading = false;
       event?.target?.complete?.();
@@ -110,6 +122,7 @@ export class Tab2Page {
       await this.loadUsers();
     } catch (error: unknown) {
       this.errorMessage = this.userService.getErrorMessage(error);
+      await this.errorModalService.present(this.diagnosticService.getLast());
     } finally {
       this.isSaving = false;
     }
@@ -126,6 +139,7 @@ export class Tab2Page {
       await this.loadUsers();
     } catch (error: unknown) {
       this.errorMessage = this.userService.getErrorMessage(error);
+      await this.errorModalService.present(this.diagnosticService.getLast());
     }
   }
 
@@ -155,5 +169,10 @@ export class Tab2Page {
   private clearMessages(): void {
     this.errorMessage = '';
     this.successMessage = '';
+    this.cacheMessage = '';
+  }
+
+  private formatCacheDate(value: string | null): string {
+    return value ? new Date(value).toLocaleString('es-MX') : 'momento desconocido';
   }
 }

@@ -33,6 +33,9 @@
     @if (successMessage) {
       <p class="feedback success">{{ successMessage }}</p>
     }
+    @if (cacheMessage) {
+      <p class="feedback warning">{{ cacheMessage }}</p>
+    }
 
     @if (showForm) {
     <section class="editor-card">

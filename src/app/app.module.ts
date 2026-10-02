@@ -12,6 +12,7 @@ import {
 import { AppRoutingModule } from './app-routing.module';
 import { AppComponent } from './app.component';
 import { AuthService } from './services/auth.service';
+import { ConnectionService } from './services/connection.service';
 
 @NgModule({
   declarations: [AppComponent],
@@ -19,7 +20,11 @@ import { AuthService } from './services/auth.service';
   providers: [
     provideIonicAngular(),
     { provide: RouteReuseStrategy, useClass: IonicRouteStrategy },
-    provideAppInitializer(() => inject(AuthService).initialize()),
+    provideAppInitializer(() => {
+      const connectionService = inject(ConnectionService);
+      const authService = inject(AuthService);
+      return connectionService.initialize().then(() => authService.initialize());
+    }),
   ],
   bootstrap: [AppComponent],
 })

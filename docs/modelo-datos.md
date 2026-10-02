@@ -1,10 +1,12 @@
 # Modelo inicial de datos
 
-La primera etapa del Oráculo MLB usa dos entidades: usuarios y tokens de autenticación. La estructura física se encuentra en `backend/php-api/database.sql`.
+El Oráculo deportivo utiliza entidades de autenticación y entidades predictivas. La estructura física se encuentra en `backend/php-api/database.sql`.
 
 ```mermaid
 erDiagram
     USERS ||--o{ AUTH_TOKENS : genera
+    SPORTS_GAMES ||--o{ PREDICTIONS : contiene
+    MODEL_RUNS ||--o{ PREDICTIONS : produce
 
     USERS {
         bigint id PK
@@ -28,6 +30,38 @@ erDiagram
         varchar ip_address
         varchar user_agent
         timestamp created_at
+    }
+
+    SPORTS_GAMES {
+        bigint id PK
+        varchar external_game_id UK
+        enum sport
+        smallint season
+        smallint week
+        datetime game_date
+        varchar away_team
+        varchar home_team
+    }
+
+    MODEL_RUNS {
+        bigint id PK
+        enum sport
+        varchar model_version
+        enum status
+        datetime started_at
+        datetime finished_at
+    }
+
+    PREDICTIONS {
+        bigint id PK
+        bigint game_id FK
+        bigint model_run_id FK
+        varchar market_type
+        decimal line_value
+        varchar selection
+        decimal probability
+        decimal edge_value
+        varchar pick_status
     }
 ```
 
@@ -53,7 +87,10 @@ Registra las sesiones creadas al iniciar sesión. En la base únicamente se alma
 
 La relación es **uno a muchos**: un usuario puede tener varias sesiones. La llave foránea tiene `ON DELETE CASCADE`, por lo que al eliminar un usuario también se eliminan sus tokens.
 
-## Siguiente ampliación
+## Entidades deportivas
 
-Cuando se conecte el modelo predictivo se agregarán entidades para juegos, abridores, predicciones y resultados. Esa ampliación debe realizarse junto con el contrato definitivo de la API Python para no duplicar los datos que ya produce el pipeline MLB.
+- `sports_games` identifica partidos MLB y NFL sin duplicarlos.
+- `predictions` almacena F5, totales NFL y props de jugadores bajo un contrato común.
+- `model_runs` permite auditar versión, estado y cantidad de resultados de cada ejecución.
 
+El campo `source_prediction_key` permite actualizar una predicción existente cuando el modelo vuelve a ejecutarse, evitando registros duplicados.

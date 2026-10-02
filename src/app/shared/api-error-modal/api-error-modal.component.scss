@@ -1,0 +1,20 @@
+:host { display: block; }
+
+ion-content { --background: #111522; }
+.diagnostic-shell { padding: 20px; color: #eef1ff; }
+.summary h1 { margin: 12px 0 4px; font-size: 21px; }
+.summary p { margin: 0 0 18px; color: #9299b3; font-size: 12px; }
+.detail-grid { display: grid; grid-template-columns: repeat(2, minmax(0, 1fr)); gap: 10px; }
+.detail-grid article, .json-card {
+  padding: 14px;
+  border: 1px solid #30364e;
+  border-radius: 14px;
+  background: #1c2132;
+}
+.detail-grid .wide { grid-column: 1 / -1; }
+.detail-grid span { display: block; margin-bottom: 7px; color: #8991aa; font-size: 11px; text-transform: uppercase; }
+.detail-grid strong { overflow-wrap: anywhere; font-size: 13px; }
+.json-card { margin-top: 12px; }
+.json-card h2 { margin: 0 0 10px; font-size: 14px; }
+.json-card pre { margin: 0; overflow: auto; color: #b8dcff; font-size: 11px; white-space: pre-wrap; overflow-wrap: anywhere; }
+@media (max-width: 480px) { .detail-grid { grid-template-columns: 1fr; } .detail-grid .wide { grid-column: auto; } }

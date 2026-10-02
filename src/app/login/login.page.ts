@@ -1,6 +1,9 @@
 import { ChangeDetectorRef, Component, inject } from '@angular/core';
 import { Router } from '@angular/router';
 import { AuthService } from '../services/auth.service';
+import { ApiDiagnostic, ApiDiagnosticService } from '../services/api-diagnostic.service';
+import { ConnectionService } from '../services/connection.service';
+import { NetworkService } from '../services/network.service';
 
 @Component({
   selector: 'app-login',
@@ -10,13 +13,18 @@ import { AuthService } from '../services/auth.service';
 })
 export class LoginPage {
   private readonly authService = inject(AuthService);
+  private readonly connectionService = inject(ConnectionService);
+  private readonly diagnosticService = inject(ApiDiagnosticService);
+  private readonly networkService = inject(NetworkService);
   private readonly router = inject(Router);
   private readonly changeDetector = inject(ChangeDetectorRef);
 
   username = '';
   password = '';
+  serverIp = '';
   usernameFocused = false;
   passwordFocused = false;
+  serverFocused = false;
   isTesting = false;
   isMoved = false;
   showAuthenticating = false;
@@ -24,8 +32,19 @@ export class LoginPage {
   showSuccess = false;
   isAnimating = false;
   errorMessage = '';
+  connectionDiagnostic: ApiDiagnostic | null = null;
+
+  get destinationPreview(): string {
+    const ip = this.serverIp.trim() || '192.168.1.71';
+    return `http://${ip}:80/miapp-api/login.php`;
+  }
+
+  get currentNetworkStatus(): string {
+    return this.networkService.label();
+  }
 
   ionViewWillEnter(): void {
+    this.serverIp = this.connectionService.getHost();
     if (this.authService.isAuthenticated()) {
       void this.router.navigateByUrl('/tabs/tab1', { replaceUrl: true });
     }
@@ -35,8 +54,17 @@ export class LoginPage {
     if (this.isAnimating) return;
 
     this.errorMessage = '';
-    if (!this.username.trim() || !this.password) {
-      this.errorMessage = 'Escribe tu usuario y contraseña.';
+    if (!this.serverIp.trim() || !this.username.trim() || !this.password) {
+      this.errorMessage = 'Escribe la IP, el usuario y la contraseña.';
+      this.changeDetector.detectChanges();
+      return;
+    }
+
+    try {
+      await this.connectionService.setHost(this.serverIp);
+      this.serverIp = this.connectionService.getHost();
+    } catch (error: unknown) {
+      this.errorMessage = error instanceof Error ? error.message : 'La IP no es valida.';
       this.changeDetector.detectChanges();
       return;
     }
@@ -62,6 +90,7 @@ export class LoginPage {
           password: this.password
         })
       ]);
+      this.connectionDiagnostic = this.diagnosticService.getLast();
 
       this.showAuthenticating = false;
       this.changeDetector.detectChanges();
@@ -85,6 +114,7 @@ export class LoginPage {
       this.isTesting = false;
       this.isAnimating = false;
       this.errorMessage = this.authService.getErrorMessage(error);
+      this.connectionDiagnostic = this.diagnosticService.getLast();
       this.changeDetector.detectChanges();
     }
   }

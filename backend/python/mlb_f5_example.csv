@@ -1,0 +1,4 @@
+game_id,game_date,season,away_team,home_team,line,predicted_value,selection,probability_pick,probability_over,probability_under,edge,odds,expected_value,pick_status,calibration_method,model_version,generated_at
+demo-mlb-002,2026-10-03 18:05:00,2026,LAD,SD,3.5,4.21,OVER,0.612,0.612,0.388,0.71,-110,0.168,PICK,Beta binomial,MLB_F5_V8_1,2026-10-03 10:00:00
+demo-mlb-002,2026-10-03 18:05:00,2026,LAD,SD,4.5,4.21,UNDER,0.548,0.452,0.548,-0.29,-108,0.055,PICK,Platt,MLB_F5_V8_1,2026-10-03 10:00:00
+demo-mlb-002,2026-10-03 18:05:00,2026,LAD,SD,5.5,4.21,UNDER,0.663,0.337,0.663,-1.29,-115,0.239,PICK,Residual empirico,MLB_F5_V8_1,2026-10-03 10:00:00

@@ -1,0 +1,44 @@
+<ion-header class="ion-no-border">
+  <ion-toolbar color="danger">
+    <ion-title>Detalle del error API</ion-title>
+    <ion-buttons slot="end">
+      <ion-button (click)="close()" aria-label="Cerrar detalle">
+        <ion-icon name="close-outline" slot="icon-only"></ion-icon>
+      </ion-button>
+    </ion-buttons>
+  </ion-toolbar>
+</ion-header>
+
+<ion-content>
+  <main class="diagnostic-shell">
+    <section class="summary">
+      <ion-chip color="danger">{{ diagnostic.method }}</ion-chip>
+      <h1>{{ diagnostic.message }}</h1>
+      <p>{{ diagnostic.timestamp | date:'medium' }}</p>
+    </section>
+
+    <section class="detail-grid">
+      <article><span>Estado de red</span><strong>{{ diagnostic.networkStatus }}</strong></article>
+      <article><span>Estado HTTP</span><strong>{{ diagnostic.httpStatus ?? 'Sin respuesta' }} {{ diagnostic.statusText }}</strong></article>
+      <article><span>IP destino</span><strong>{{ diagnostic.ip }}</strong></article>
+      <article class="wide"><span>Solicitud</span><strong>{{ diagnostic.url }}</strong></article>
+    </section>
+
+    <section class="json-card">
+      <h2>Payload enviado</h2>
+      <pre>{{ diagnostic.requestPayload | json }}</pre>
+    </section>
+    <section class="json-card">
+      <h2>Payload recibido</h2>
+      <pre>{{ diagnostic.responsePayload | json }}</pre>
+    </section>
+    <section class="json-card">
+      <h2>Cabeceras de solicitud</h2>
+      <pre>{{ diagnostic.requestHeaders | json }}</pre>
+    </section>
+    <section class="json-card">
+      <h2>Cabeceras de respuesta</h2>
+      <pre>{{ diagnostic.responseHeaders | json }}</pre>
+    </section>
+  </main>
+</ion-content>

@@ -80,6 +80,12 @@ h1 {
   border: 1px solid rgba(45, 211, 111, 0.25);
 }
 
+.feedback.warning {
+  color: #ffd78a;
+  background: rgba(255, 190, 75, 0.1);
+  border: 1px solid rgba(255, 190, 75, 0.28);
+}
+
 .editor-card,
 .user-card,
 .empty-state {

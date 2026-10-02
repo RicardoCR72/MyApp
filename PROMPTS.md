@@ -23,3 +23,7 @@
 ## Verificación
 
 > Revisa que la implementación de persistencia compile, pase el linter y mantenga funcionando el CRUD de usuarios mediante Axios y PHP.
+
+## Integración del Oráculo deportivo
+
+> Integra en Tab3 las predicciones terminadas de MLB F5 y NFL, utilizando los modelos Python existentes como referencia, una base MySQL local de XAMPP, una API PHP autenticada y Axios desde Ionic Angular.

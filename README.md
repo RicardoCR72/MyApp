@@ -11,7 +11,7 @@ Centralizar en una interfaz sencilla los resultados del modelo predictivo **Orá
 1. **Login (`/login`)**: valida credenciales contra la API PHP, guarda el token y protege las rutas internas.
 2. **Sesión (`/tabs/tab1`)**: muestra la cuenta autenticada y permite cerrar sesión.
 3. **Usuarios (`/tabs/tab2`)**: lista, crea, edita parcialmente y elimina usuarios mediante la API REST.
-4. **Oráculo MLB (`/tabs/tab3`)**: pantalla principal y presentación de los mercados F5 3.5, 4.5 y 5.5 que recibirá del modelo.
+4. **Oráculo deportivo (`/tabs/tab3`)**: consulta predicciones reales de MLB y NFL almacenadas en XAMPP.
 
 ## Tecnologías
 
@@ -34,13 +34,17 @@ src/app/
 └── services/
     ├── auth.service.ts    Login, token y sesión
     ├── auth.guard.ts      Protección de rutas
-    └── user.service.ts    Consumo del CRUD de usuarios
+    ├── user.service.ts    Consumo del CRUD de usuarios
+    └── oracle.service.ts  Predicciones MLB y NFL
 
 backend/php-api/
 ├── config/database.php    Conexión PDO
 ├── models/User.php        Modelo utilizado por el login
 ├── login.php              Inicio de sesión
 ├── users.php              CRUD REST de usuarios
+├── predictions.php        Consulta e importación del Oráculo
+├── python/
+│   └── sync_oracle.py     Sincroniza salidas Python con XAMPP
 └── database.sql           Estructura y carga inicial
 ```
 
@@ -61,6 +65,9 @@ npx cap sync
 
 - `users` y `auth_tokens` permanecen en MySQL/MariaDB mediante la API PHP.
 - El token, el usuario autenticado y la expiración se almacenan con Capacitor Preferences.
+- Los últimos usuarios y predicciones MLB/NFL se almacenan temporalmente en Preferences y se muestran si la API queda fuera de línea.
+- La aplicación escucha eventos `online`/`offline`, genera diagnósticos de Axios y muestra mensajes o modales según el fallo.
+- La evidencia y pasos de prueba están en `PRUEBA_SIN_CONEXION.md`; los problemas y soluciones están en `BITACORA_CONECTIVIDAD.md`.
 - `AuthService.initialize()` restaura la sesión antes de evaluar las rutas protegidas.
 - Una sesión vencida o el botón **Cerrar sesión** eliminan los valores persistentes.
 
@@ -98,6 +105,9 @@ apiUrl: 'http://localhost/miapp-api'
 | PATCH | `/users.php?id=1` | Actualizar campos específicos |
 | DELETE | `/users.php?id=1` | Eliminar usuario |
 | OPTIONS | `/users.php` | Preflight CORS |
+| GET | `/predictions.php?sport=MLB` | Consultar predicciones MLB |
+| GET | `/predictions.php?sport=NFL` | Consultar predicciones NFL |
+| POST | `/predictions.php` | Importar resultados de los modelos |
 
 El CRUD requiere un usuario administrador y el encabezado:
 
@@ -107,7 +117,21 @@ Authorization: Bearer TOKEN_GENERADO_EN_LOGIN
 
 ## Modelo inicial de datos
 
-El modelo entidad-relación y la descripción de campos están disponibles en [`docs/modelo-datos.md`](docs/modelo-datos.md). La primera etapa utiliza `users` y `auth_tokens`.
+El modelo entidad-relación y la descripción de campos están disponibles en [`docs/modelo-datos.md`](docs/modelo-datos.md). Incluye usuarios, sesiones, partidos, ejecuciones y predicciones.
+
+## Sincronización del Oráculo
+
+La guía completa está en [`docs/integracion-oraculo.md`](docs/integracion-oraculo.md). Ejemplo para NFL:
+
+```bat
+set ORACLE_USERNAME=admin
+set ORACLE_PASSWORD=password
+python backend\\python\\sync_oracle.py ^
+  --nfl-totals ruta\\nfl_totales.csv ^
+  --nfl-props ruta\\nfl_props.csv
+```
+
+Para MLB, el modelo F5 debe exportar el contrato mostrado en `backend/python/mlb_f5_example.csv`.
 
 El diagrama de las clases principales se encuentra en [`docs/diagrama-clases.md`](docs/diagrama-clases.md).
 

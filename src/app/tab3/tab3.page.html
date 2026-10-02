@@ -1,84 +1,152 @@
 <ion-header class="ion-no-border">
   <ion-toolbar>
-    <ion-title>Oráculo MLB</ion-title>
+    <ion-title>Oráculo deportivo</ion-title>
+    <ion-buttons slot="end">
+      <ion-button (click)="loadPredictions()" aria-label="Actualizar predicciones">
+        <ion-icon name="refresh-outline" slot="icon-only"></ion-icon>
+      </ion-button>
+    </ion-buttons>
   </ion-toolbar>
 </ion-header>
 
 <ion-content [fullscreen]="true" class="oracle-page">
+  <ion-refresher slot="fixed" (ionRefresh)="loadPredictions($event)">
+    <ion-refresher-content></ion-refresher-content>
+  </ion-refresher>
+
   <main class="oracle-shell">
     <section class="hero-card">
-      <div class="hero-copy">
-        <p class="eyebrow">Modelo predictivo · MLB</p>
+      <div>
+        <p class="eyebrow">Modelos predictivos · MLB + NFL</p>
         <h1>Bienvenido al Oráculo, {{ currentUser?.fullName || currentUser?.username }}</h1>
-        <p class="hero-description">
-          Un panel enfocado en probabilidades Over/Under de primeras cinco entradas,
-          construido con abridores, lineups, clima y contexto del partido.
+        <p>
+          Probabilidades calibradas, líneas, edge y valor esperado obtenidos de los modelos Python.
         </p>
-        <div class="hero-actions">
-          <ion-button disabled>
-            <ion-icon name="sparkles-outline" slot="start"></ion-icon>
-            Predicciones del día
-          </ion-button>
-          <span>La conexión con el modelo Python será la siguiente etapa.</span>
+      </div>
+      <ion-icon [name]="selectedSport === 'MLB' ? 'baseball-outline' : 'american-football-outline'"></ion-icon>
+    </section>
+
+    <ion-segment
+      [value]="selectedSport"
+      (ionChange)="changeSport($any($event.detail.value))"
+      aria-label="Seleccionar deporte"
+    >
+      <ion-segment-button value="MLB">
+        <ion-label>MLB</ion-label>
+      </ion-segment-button>
+      <ion-segment-button value="NFL">
+        <ion-label>NFL</ion-label>
+      </ion-segment-button>
+    </ion-segment>
+
+    <section class="summary-grid">
+      <article>
+        <span>Deporte</span>
+        <strong>{{ selectedSport }}</strong>
+      </article>
+      <article>
+        <span>Predicciones</span>
+        <strong>{{ predictions.length }}</strong>
+      </article>
+      <article>
+        <span>Estado</span>
+        <strong>{{ isLoading ? 'Actualizando' : 'Conectado' }}</strong>
+      </article>
+    </section>
+
+    @if (errorMessage) {
+      <section class="feedback error">
+        <ion-icon name="alert-circle-outline"></ion-icon>
+        <div><strong>No se pudieron cargar los datos</strong><span>{{ errorMessage }}</span></div>
+      </section>
+    }
+
+    @if (cacheMessage) {
+      <section class="feedback warning">
+        <ion-icon name="cloud-offline-outline"></ion-icon>
+        <div><strong>Modo sin conexión</strong><span>{{ cacheMessage }}</span></div>
+      </section>
+    }
+
+    @if (isLoading) {
+      <section class="loading-state">
+        <ion-spinner name="crescent"></ion-spinner>
+        <span>Cargando predicciones {{ selectedSport }}…</span>
+      </section>
+    }
+
+    @if (!isLoading && predictions.length > 0) {
+      <section class="section-heading">
+        <div>
+          <p class="eyebrow">Mercados disponibles</p>
+          <h2>Predicciones {{ selectedSport }}</h2>
         </div>
-      </div>
-      <div class="baseball-orbit" aria-hidden="true">
-        <div class="orbit-ring"></div>
-        <ion-icon name="baseball-outline"></ion-icon>
-      </div>
-    </section>
+        <ion-badge color="tertiary">Datos desde XAMPP</ion-badge>
+      </section>
 
-    <section class="status-grid">
-      <article class="status-card">
-        <div class="status-icon ready"><ion-icon name="shield-checkmark-outline"></ion-icon></div>
-        <div><span>Autenticación</span><strong>Operativa</strong></div>
-      </article>
-      <article class="status-card">
-        <div class="status-icon ready"><ion-icon name="people-outline"></ion-icon></div>
-        <div><span>Usuarios</span><strong>CRUD conectado</strong></div>
-      </article>
-      <article class="status-card">
-        <div class="status-icon pending"><ion-icon name="analytics-outline"></ion-icon></div>
-        <div><span>Modelo MLB</span><strong>Próxima integración</strong></div>
-      </article>
-    </section>
+      <section class="predictions-grid">
+        @for (prediction of predictions; track prediction.id) {
+          <article class="prediction-card">
+            <div class="card-heading">
+              <div>
+                <p class="game-date">{{ prediction.gameDate | date:'medium' }}</p>
+                <h3>{{ prediction.awayTeam }} <span>&#64;</span> {{ prediction.homeTeam }}</h3>
+              </div>
+              <ion-badge [color]="pickColor(prediction.pickStatus)">
+                {{ prediction.pickStatus }}
+              </ion-badge>
+            </div>
 
-    <section class="section-heading">
-      <div>
-        <p class="eyebrow">Mercados del modelo</p>
-        <h2>Probabilidades F5 disponibles</h2>
-      </div>
-      <ion-badge color="tertiary">Temporada 2026</ion-badge>
-    </section>
+            <div class="market-heading">
+              <div>
+                <span>{{ marketLabel(prediction) }}</span>
+                @if (prediction.participantName) {
+                  <strong>{{ prediction.participantName }}</strong>
+                }
+              </div>
+              <div class="line-pill">Línea {{ prediction.line }}</div>
+            </div>
 
-    <section class="markets-grid">
-      @for (market of markets; track market.line) {
-      <article class="market-card">
-        <div class="market-line">{{ market.line }}</div>
-        <p class="calibration">{{ market.calibration }}</p>
-        <p>{{ market.description }}</p>
-        <div class="probability-placeholder">
-          <span>OVER</span><strong>—</strong>
-          <span>UNDER</span><strong>—</strong>
-        </div>
-      </article>
-      }
-    </section>
+            <div class="pick-panel" [class.under]="prediction.selection === 'UNDER'">
+              <span>Selección del modelo</span>
+              <strong>{{ prediction.selection }}</strong>
+              <small>{{ probabilityPercent(prediction.probability) }} de probabilidad</small>
+            </div>
 
-    <section class="pipeline-card">
-      <div>
-        <p class="eyebrow">Flujo previsto</p>
-        <h2>Del juego a la decisión</h2>
-      </div>
-      <div class="pipeline">
-        <div><ion-icon name="cloud-download-outline"></ion-icon><span>Datos MLB</span></div>
-        <ion-icon class="arrow" name="arrow-forward-outline"></ion-icon>
-        <div><ion-icon name="hardware-chip-outline"></ion-icon><span>Modelo F5</span></div>
-        <ion-icon class="arrow" name="arrow-forward-outline"></ion-icon>
-        <div><ion-icon name="options-outline"></ion-icon><span>Calibración</span></div>
-        <ion-icon class="arrow" name="arrow-forward-outline"></ion-icon>
-        <div><ion-icon name="phone-portrait-outline"></ion-icon><span>Aplicación</span></div>
-      </div>
-    </section>
+            <div class="metrics-grid">
+              <div><span>Proyección</span><strong>{{ prediction.predictedValue ?? 'N/D' }}</strong></div>
+              <div><span>Edge</span><strong>{{ signedNumber(prediction.edge) }}</strong></div>
+              <div><span>Cuota</span><strong>{{ oddsLabel(prediction.odds) }}</strong></div>
+              <div><span>EV</span><strong>{{ expectedValueLabel(prediction.expectedValue) }}</strong></div>
+            </div>
+
+            @if (prediction.overProbability !== null || prediction.underProbability !== null) {
+              <div class="probability-row">
+                <div><span>OVER</span><strong>{{ probabilityPercent(prediction.overProbability) }}</strong></div>
+                <div><span>UNDER</span><strong>{{ probabilityPercent(prediction.underProbability) }}</strong></div>
+              </div>
+            }
+
+            <footer>
+              <span>Modelo: {{ prediction.modelVersion }}</span>
+              @if (prediction.calibrationMethod) {
+                <span>Calibración: {{ prediction.calibrationMethod }}</span>
+              }
+              @if (prediction.injuryStatus) {
+                <span>Lesión: {{ prediction.injuryStatus }}</span>
+              }
+            </footer>
+          </article>
+        }
+      </section>
+    }
+
+    @if (!isLoading && !errorMessage && predictions.length === 0) {
+      <section class="empty-state">
+        <ion-icon name="analytics-outline"></ion-icon>
+        <h2>No hay predicciones {{ selectedSport }}</h2>
+        <p>Ejecuta el modelo Python o cambia el deporte seleccionado.</p>
+      </section>
+    }
   </main>
 </ion-content>
