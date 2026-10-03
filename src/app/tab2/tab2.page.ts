@@ -44,7 +44,6 @@ export class Tab2Page {
       const state = this.userService.getLoadState();
       if (state.source === 'cache') {
         this.cacheMessage = `Sin conexión con la API. Mostrando usuarios guardados el ${this.formatCacheDate(state.savedAt)}.`;
-        await this.errorModalService.present(this.diagnosticService.getLast());
       }
     } catch (error: unknown) {
       this.errorMessage = this.userService.getErrorMessage(error);

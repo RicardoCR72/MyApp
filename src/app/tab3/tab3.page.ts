@@ -46,7 +46,6 @@ export class Tab3Page {
       const state = this.oracleService.getLoadState();
       if (state.source === 'cache') {
         this.cacheMessage = `Sin conexión con la API. Mostrando predicciones guardadas el ${this.formatCacheDate(state.savedAt)}.`;
-        await this.errorModalService.present(this.diagnosticService.getLast());
       }
     } catch (error: unknown) {
       this.predictions = [];
