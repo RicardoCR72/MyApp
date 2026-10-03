@@ -1,6 +1,6 @@
 <ion-content [fullscreen]="true" class="login-page">
   <div class="brand" aria-hidden="true">
-    <img src="https://s3-us-west-2.amazonaws.com/s.cdpn.io/217233/logo.png" alt="" />
+    <img src="assets/login/logo.svg" alt="" />
   </div>
 
   <section
@@ -33,13 +33,13 @@
             required
           />
           <div class="validation" [class.visible]="serverIp.length > 0">
-            <img src="https://s3-us-west-2.amazonaws.com/s.cdpn.io/217233/tick.png" alt="" />
+            <img src="assets/login/tick.svg" alt="" />
           </div>
         </div>
 
         <div class="login_fields__user">
           <div class="icon" [class.focused]="usernameFocused">
-            <img src="https://s3-us-west-2.amazonaws.com/s.cdpn.io/217233/user_icon_copy.png" alt="" />
+            <img src="assets/login/user.svg" alt="" />
           </div>
           <input
             type="text"
@@ -53,13 +53,13 @@
             required
           />
           <div class="validation" [class.visible]="username.length > 0">
-            <img src="https://s3-us-west-2.amazonaws.com/s.cdpn.io/217233/tick.png" alt="" />
+            <img src="assets/login/tick.svg" alt="" />
           </div>
         </div>
 
         <div class="login_fields__password">
           <div class="icon" [class.focused]="passwordFocused">
-            <img src="https://s3-us-west-2.amazonaws.com/s.cdpn.io/217233/lock_icon_copy.png" alt="" />
+            <img src="assets/login/lock.svg" alt="" />
           </div>
           <input
             type="password"
@@ -73,7 +73,7 @@
             required
           />
           <div class="validation" [class.visible]="password.length > 0">
-            <img src="https://s3-us-west-2.amazonaws.com/s.cdpn.io/217233/tick.png" alt="" />
+            <img src="assets/login/tick.svg" alt="" />
           </div>
         </div>
 
@@ -142,7 +142,7 @@
   </section>
 
   <section class="authent" [class.visible]="showAuthenticating" aria-live="polite">
-    <img src="https://s3-us-west-2.amazonaws.com/s.cdpn.io/217233/puff.svg" alt="" />
+    <img src="assets/login/spinner.svg" alt="" />
     <p>Validando credenciales…</p>
   </section>
 

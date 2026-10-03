@@ -24,9 +24,17 @@
 - **Resultado:** la aplicación conserva lectura offline. Las altas, modificaciones y eliminaciones siguen requiriendo conexión para proteger la consistencia de MySQL.
 - **Uso de IA:** ayudó a diseñar la estrategia “network first, cache fallback” y una prueba automatizada. La decisión final fue no permitir escrituras offline para evitar conflictos.
 
+## Problema 4 La interfaz no podía recargarse completamente sin conexión
+
+- **Síntoma:** Preferences conservaba los datos, pero al actualizar el navegador en modo Offline todavía era necesario descargar `index.html`, JavaScript, CSS e iconos.
+- **Causa:** la aplicación no tenía un Service Worker y el Login utilizaba imágenes externas.
+- **Solución:** se agregó Angular Service Worker con precarga del app shell, módulos lazy, assets e iconos. Las imágenes externas del Login se reemplazaron por SVG locales.
+- **Resultado:** después de abrir la compilación de producción una vez con conexión, la página puede recargarse y navegarse desde la caché del navegador. Usuarios y Oráculo complementan esta capa con datos guardados en Preferences.
+- **Uso de IA:** ayudó a separar la caché de interfaz de la caché de datos y a preparar el procedimiento reproducible de DevTools.
+
 ## Verificaciones realizadas
 
-- `npm run build`.
+- `npm run build:pwa` y comprobación de `www/ngsw-worker.js` y `www/ngsw.json`.
 - `npm run lint`.
 - `npm test -- --watch=false`.
 - Prueba automatizada `src/app/services/user-offline.spec.ts`.

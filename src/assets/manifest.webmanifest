@@ -1,0 +1,16 @@
+{
+  "name": "MiApp Oráculo deportivo",
+  "short_name": "MiApp",
+  "theme_color": "#202538",
+  "background_color": "#101421",
+  "display": "standalone",
+  "scope": "/",
+  "start_url": "/",
+  "icons": [
+    {
+      "src": "icon/favicon.png",
+      "sizes": "64x64",
+      "type": "image/png"
+    }
+  ]
+}

@@ -1,6 +1,6 @@
 # Oráculo MLB · Ionic Angular
 
-Aplicación móvil/web para consultar probabilidades predictivas de MLB, administrar usuarios y controlar el acceso mediante autenticación. El proyecto está construido con Ionic + Angular usando NgModules, una API PHP y MariaDB/MySQL.
+Aplicación móvil/web versión 1.0 para consultar predicciones de MLB y NFL, administrar usuarios y controlar el acceso mediante autenticación. El proyecto está construido con Ionic + Angular usando NgModules, una API PHP y MariaDB/MySQL.
 
 ## Objetivo
 
@@ -21,7 +21,8 @@ Centralizar en una interfaz sencilla los resultados del modelo predictivo **Orá
 - PHP 8.2 con PDO
 - MariaDB/MySQL
 - Capacitor
-- Capacitor Preferences para persistencia local de la sesión
+- Capacitor Preferences para persistencia local y caché de datos
+- Angular Service Worker para almacenar la interfaz y permitir recargas offline
 
 ## Estructura relevante
 
@@ -73,17 +74,25 @@ npx cap sync
 
 La guía de demostración está en [`docs/persistencia-preferences.md`](docs/persistencia-preferences.md).
 
-La URL de la API se configura en:
+La IP de la API se escribe en el Login y se guarda como JSON mediante `ConnectionService` y Preferences. Todas las pantallas construyen sus endpoints desde esa misma configuración.
 
-```text
-src/environments/environment.ts
-src/environments/environment.prod.ts
+## Prueba PWA sin conexión
+
+El modo offline completo requiere una compilación de producción; `ionic serve` es un servidor de desarrollo y no es la prueba correcta del Service Worker.
+
+```bash
+npm run build:pwa
+npm run serve:pwa
 ```
 
-Para XAMPP local se utiliza:
+Abrir `http://localhost:8100`, esperar a que el Service Worker aparezca como activado en DevTools y recargar una vez con conexión. Después seleccionar **Network → Offline** y actualizar la página. La interfaz se obtiene del Service Worker y Usuarios/Oráculo usan las copias guardadas en Preferences.
 
-```ts
-apiUrl: 'http://localhost/miapp-api'
+La configuración de la PWA está en:
+
+```text
+ngsw-config.json
+src/app/app.module.ts
+src/assets/manifest.webmanifest
 ```
 
 ## Instalación del backend
@@ -147,7 +156,7 @@ La guía y los nombres esperados están en [`docs/capturas/README.md`](docs/capt
 
 ## Repositorio Git
 
-El proyecto ya incluye un repositorio Git. Para registrar esta entrega:
+Para registrar la entrega en un repositorio:
 
 ```bash
 git status

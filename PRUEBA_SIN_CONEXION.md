@@ -12,16 +12,19 @@ La prueba `user-offline.spec.ts` simula una API sin respuesta y verifica que `Us
 
 ## Demostración manual para video
 
-1. Encender Apache y MySQL.
-2. Iniciar sesión y abrir **Usuarios** y **Oráculo** al menos una vez. Esto genera las copias locales.
-3. Mostrar que ambas pantallas tienen información.
-4. Apagar Apache desde XAMPP o desactivar temporalmente la red.
-5. Actualizar Usuarios.
-6. Verificar el modal con “sin respuesta” y cerrar el modal.
-7. Comprobar que los usuarios siguen visibles y aparece “Mostrando usuarios guardados”.
-8. Repetir en Oráculo y comprobar que permanecen las predicciones.
-9. Volver a encender Apache o la red y actualizar.
-10. Comprobar que desaparece el aviso offline y se reemplaza la caché con datos actuales.
+1. Ejecutar `npm run build:pwa`.
+2. Ejecutar `npm run serve:pwa`.
+3. Abrir `http://localhost:8100` con conexión y recargar una vez.
+4. Encender Apache y MySQL, iniciar sesión y abrir **Usuarios** y **Oráculo**. Esto genera las copias locales.
+5. Abrir DevTools, entrar en **Application → Service Workers** y comprobar que `ngsw-worker.js` está activado.
+6. Entrar en **Network** y seleccionar **Offline**.
+7. Actualizar completamente la página. La interfaz debe seguir cargando.
+8. Abrir Usuarios y comprobar el aviso “Mostrando usuarios guardados”.
+9. Abrir Oráculo y comprobar que permanecen las predicciones guardadas.
+10. Volver a seleccionar **No throttling**, encender Apache si fue apagado y actualizar.
+11. Comprobar que desaparece el aviso offline y se reemplaza la caché con datos actuales.
+
+Importante: no usar `ionic serve` para demostrar una recarga PWA, porque el Service Worker se genera en la compilación de producción.
 
 ## Resultado esperado
 
@@ -29,5 +32,6 @@ La prueba `user-offline.spec.ts` simula una API sin respuesta y verifica que `Us
 - El error no cierra la aplicación.
 - Aparece un mensaje entendible y un modal técnico.
 - Usuarios y predicciones permanecen visibles usando Preferences.
+- La interfaz, rutas, JavaScript, CSS, iconos y recursos locales se cargan desde el Service Worker.
 - Se muestra la fecha en que se guardó la información.
 - Crear, editar y eliminar requieren conexión; no se simula una escritura que MySQL no haya confirmado.
