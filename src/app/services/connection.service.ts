@@ -1,17 +1,9 @@
 import { Injectable } from '@angular/core';
 import { Preferences } from '@capacitor/preferences';
 import { environment } from '../../environments/environment';
+import { DataSourceConfig } from '../models';
 
-export interface DataSourceConfig {
-  version: number;
-  name: string;
-  protocol: 'http';
-  ip: string;
-  apachePort: 80;
-  mysqlPort: 3306;
-  apiPath: string;
-  updatedAt: string;
-}
+export { DataSourceConfig };
 
 @Injectable({ providedIn: 'root' })
 export class ConnectionService {

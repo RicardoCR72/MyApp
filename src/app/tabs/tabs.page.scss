@@ -15,3 +15,103 @@ ion-tab-button {
   --ripple-color: rgba(239, 91, 120, 0.2);
   font-size: 11px;
 }
+
+.sync-banner {
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  padding: 8px 16px;
+  background: #2a2215;
+  color: #ffc409;
+  border-bottom: 1px solid rgba(255, 196, 9, 0.3);
+  font-size: 13px;
+  z-index: 1000;
+  box-shadow: 0 2px 8px rgba(0, 0, 0, 0.3);
+  animation: slideDown 0.3s ease-out;
+
+  &.is-offline {
+    background: #381c1c;
+    color: #ff6b6b;
+    border-bottom: 1px solid rgba(255, 107, 107, 0.4);
+
+    .sync-icon {
+      color: #ff6b6b;
+    }
+  }
+
+  &.is-synced {
+    background: #113322;
+    color: #2dd36f;
+    border-bottom: 1px solid rgba(45, 211, 111, 0.4);
+
+    .sync-icon {
+      color: #2dd36f;
+    }
+  }
+
+  &.is-syncing {
+    background: #1e2638;
+    color: #3880ff;
+    border-bottom: 1px solid rgba(56, 128, 255, 0.4);
+
+    .sync-icon {
+      color: #3880ff;
+      animation: spin 1.2s linear infinite;
+    }
+  }
+
+  .sync-banner-content {
+    display: flex;
+    align-items: center;
+    gap: 10px;
+    flex: 1;
+    min-width: 0;
+  }
+
+  .sync-icon {
+    font-size: 20px;
+    flex-shrink: 0;
+  }
+
+  .sync-banner-text {
+    display: flex;
+    flex-direction: column;
+    min-width: 0;
+
+    .sync-title {
+      font-weight: 600;
+      line-height: 1.2;
+    }
+
+    .sync-subtitle {
+      font-size: 11px;
+      opacity: 0.85;
+      white-space: nowrap;
+      overflow: hidden;
+      text-overflow: ellipsis;
+    }
+  }
+
+  ion-button {
+    margin-left: 8px;
+    --border-radius: 6px;
+    font-size: 11px;
+    height: 28px;
+  }
+}
+
+@keyframes spin {
+  from { transform: rotate(0deg); }
+  to { transform: rotate(360deg); }
+}
+
+@keyframes slideDown {
+  from {
+    opacity: 0;
+    transform: translateY(-10px);
+  }
+  to {
+    opacity: 1;
+    transform: translateY(0);
+  }
+}

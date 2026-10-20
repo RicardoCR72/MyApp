@@ -23,7 +23,7 @@
       </div>
       <ion-button class="create-button" (click)="openCreateForm()">
         <ion-icon name="person-add-outline" slot="start"></ion-icon>
-        Nuevo usuario
+        Nuevo usuario (POST)
       </ion-button>
     </section>
 
@@ -41,13 +41,29 @@
     <section class="editor-card">
       <div class="editor-heading">
         <div>
-          <p class="eyebrow">{{ editingUserId === null ? 'Alta' : 'Edición' }}</p>
-          <h2>{{ editingUserId === null ? 'Crear usuario' : 'Actualizar usuario' }}</h2>
+          <p class="eyebrow">{{ editingUserId === null ? 'Petición POST' : (updateMethod === 'PUT' ? 'Petición PUT' : 'Petición PATCH') }}</p>
+          <h2>{{ editingUserId === null ? 'Crear usuario (POST)' : 'Actualizar usuario' }}</h2>
         </div>
         <ion-button fill="clear" color="medium" (click)="cancelForm()" aria-label="Cerrar formulario">
           <ion-icon name="close-outline" slot="icon-only"></ion-icon>
         </ion-button>
       </div>
+
+      @if (editingUserId !== null) {
+      <div class="method-selector-box" style="margin-bottom: 1rem;">
+        <ion-label style="font-size: 0.85rem; color: var(--ion-color-medium); display: block; margin-bottom: 0.4rem;">
+          Método HTTP de actualización:
+        </ion-label>
+        <ion-segment [(ngModel)]="updateMethod" name="updateMethod">
+          <ion-segment-button value="PATCH">
+            <ion-label>PATCH (Parcial)</ion-label>
+          </ion-segment-button>
+          <ion-segment-button value="PUT">
+            <ion-label>PUT (Completo)</ion-label>
+          </ion-segment-button>
+        </ion-segment>
+      </div>
+      }
 
       <div class="form-grid">
         <ion-input label="Nombre completo" labelPlacement="stacked" fill="outline"
@@ -75,7 +91,7 @@
       <div class="form-actions">
         <ion-button fill="clear" color="medium" (click)="cancelForm()">Cancelar</ion-button>
         <ion-button (click)="saveUser()" [disabled]="isSaving">
-          {{ isSaving ? 'Guardando…' : 'Guardar usuario' }}
+          {{ isSaving ? 'Procesando…' : (editingUserId === null ? 'Enviar POST' : ('Enviar ' + updateMethod)) }}
         </ion-button>
       </div>
     </section>
@@ -108,10 +124,10 @@
 
         <div class="user-actions">
           <ion-button size="small" fill="outline" (click)="openEditForm(user)">
-            <ion-icon name="create-outline" slot="start"></ion-icon>Editar
+            <ion-icon name="create-outline" slot="start"></ion-icon>Editar (PUT/PATCH)
           </ion-button>
           <ion-button size="small" fill="clear" color="danger" (click)="deleteUser(user)">
-            <ion-icon name="trash-outline" slot="start"></ion-icon>Eliminar
+            <ion-icon name="trash-outline" slot="start"></ion-icon>Eliminar (DELETE)
           </ion-button>
         </div>
       </article>

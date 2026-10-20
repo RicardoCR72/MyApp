@@ -4,22 +4,14 @@ import axios from 'axios';
 import { ApiDiagnosticService } from './api-diagnostic.service';
 import { ConnectionService } from './connection.service';
 
-export interface LoginCredentials { username: string; password: string; }
-export interface AuthUser {
-  id: number;
-  username: string;
-  email: string;
-  fullName: string;
-  role: string;
-}
-export interface LoginResponse {
-  success: boolean;
-  message: string;
-  token: string;
-  expiresAt: string;
-  user: AuthUser;
-}
-interface ApiErrorResponse { success?: boolean; message?: string; }
+import {
+  LoginCredentials,
+  AuthUser,
+  LoginResponse,
+  ApiErrorResponse
+} from '../models';
+
+export { LoginCredentials, AuthUser, LoginResponse, ApiErrorResponse };
 
 @Injectable({ providedIn: 'root' })
 export class AuthService {

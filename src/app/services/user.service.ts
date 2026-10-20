@@ -5,48 +5,27 @@ import { AuthService } from './auth.service';
 import { ConnectionService } from './connection.service';
 import { CacheService, DataLoadState } from './cache.service';
 
-export type UserRole = 'admin' | 'user';
-export type UserStatus = 'active' | 'inactive' | 'blocked';
+import {
+  UserRole,
+  UserStatus,
+  UserRecord,
+  CreateUserInput,
+  UpdateUserInput,
+  UserListResponse,
+  UserResponse,
+  DeleteResponse
+} from '../models';
 
-export interface UserRecord {
-  id: number;
-  username: string;
-  email: string;
-  fullName: string;
-  role: UserRole;
-  status: UserStatus;
-  lastLoginAt: string | null;
-  createdAt: string;
-  updatedAt: string;
-}
-
-export interface CreateUserInput {
-  username: string;
-  email: string;
-  password: string;
-  fullName: string;
-  role: UserRole;
-  status: UserStatus;
-}
-
-export type UpdateUserInput = Partial<CreateUserInput>;
-
-interface UserListResponse {
-  success: boolean;
-  count: number;
-  data: UserRecord[];
-}
-
-interface UserResponse {
-  success: boolean;
-  message?: string;
-  data: UserRecord;
-}
-
-interface DeleteResponse {
-  success: boolean;
-  message: string;
-}
+export {
+  UserRole,
+  UserStatus,
+  UserRecord,
+  CreateUserInput,
+  UpdateUserInput,
+  UserListResponse,
+  UserResponse,
+  DeleteResponse
+};
 
 @Injectable({ providedIn: 'root' })
 export class UserService {
@@ -84,6 +63,19 @@ export class UserService {
       return response.data.data;
     } catch (error: unknown) {
       this.recordError(error, 'POST', url, input);
+      throw error;
+    }
+  }
+
+  async update(id: number, input: UpdateUserInput): Promise<UserRecord> {
+    const url = this.connectionService.endpoint(`/users.php?id=${id}`);
+    try {
+      const response = await axios.put<UserResponse>(url, input, this.authorizedConfig());
+      this.recordSuccess('PUT', url, response.status, response.statusText, response.data, response.headers, input);
+      await this.updateCachedUser(response.data.data);
+      return response.data.data;
+    } catch (error: unknown) {
+      this.recordError(error, 'PUT', url, input);
       throw error;
     }
   }

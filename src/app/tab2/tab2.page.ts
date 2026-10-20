@@ -1,4 +1,5 @@
 import { Component, inject } from '@angular/core';
+import { LoadingController } from '@ionic/angular';
 import {
   CreateUserInput,
   UserRecord,
@@ -19,12 +20,14 @@ export class Tab2Page {
   private readonly userService = inject(UserService);
   private readonly diagnosticService = inject(ApiDiagnosticService);
   private readonly errorModalService = inject(ApiErrorModalService);
+  private readonly loadingCtrl = inject(LoadingController);
 
   users: UserRecord[] = [];
   isLoading = false;
   isSaving = false;
   showForm = false;
   editingUserId: number | null = null;
+  updateMethod: 'PATCH' | 'PUT' = 'PATCH';
   errorMessage = '';
   successMessage = '';
   cacheMessage = '';
@@ -92,7 +95,15 @@ export class Tab2Page {
       return;
     }
 
+    const actionText = this.editingUserId === null
+      ? 'Creando usuario (POST)...'
+      : this.updateMethod === 'PUT'
+        ? 'Reemplazando usuario (PUT)...'
+        : 'Actualizando usuario (PATCH)...';
+
+    const loading = await this.presentLoading(actionText);
     this.isSaving = true;
+
     try {
       if (this.editingUserId === null) {
         await this.userService.create({
@@ -101,7 +112,7 @@ export class Tab2Page {
           email: this.form.email.trim(),
           fullName: this.form.fullName.trim()
         });
-        this.successMessage = 'Usuario creado correctamente.';
+        this.successMessage = 'Usuario creado correctamente (POST 201).';
       } else {
         const update = {
           username: this.form.username.trim(),
@@ -111,8 +122,14 @@ export class Tab2Page {
           status: this.form.status,
           ...(this.form.password ? { password: this.form.password } : {})
         };
-        await this.userService.patch(this.editingUserId, update);
-        this.successMessage = 'Usuario actualizado correctamente.';
+
+        if (this.updateMethod === 'PUT') {
+          await this.userService.update(this.editingUserId, update);
+          this.successMessage = 'Usuario reemplazado completamente (PUT 200).';
+        } else {
+          await this.userService.patch(this.editingUserId, update);
+          this.successMessage = 'Usuario actualizado parcialmente (PATCH 200).';
+        }
       }
 
       this.showForm = false;
@@ -124,22 +141,36 @@ export class Tab2Page {
       await this.errorModalService.present(this.diagnosticService.getLast());
     } finally {
       this.isSaving = false;
+      await loading.dismiss();
     }
   }
 
   async deleteUser(user: UserRecord): Promise<void> {
-    const confirmed = window.confirm(`¿Eliminar al usuario ${user.username}? Esta acción no se puede deshacer.`);
+    const confirmed = window.confirm(`¿Eliminar al usuario ${user.username}? Esta acción ejecutará DELETE en la API.`);
     if (!confirmed) return;
 
     this.clearMessages();
+    const loading = await this.presentLoading('Eliminando usuario (DELETE)...');
+
     try {
       await this.userService.remove(user.id);
-      this.successMessage = 'Usuario eliminado correctamente.';
+      this.successMessage = `Usuario @${user.username} eliminado correctamente (DELETE 200).`;
       await this.loadUsers();
     } catch (error: unknown) {
       this.errorMessage = this.userService.getErrorMessage(error);
       await this.errorModalService.present(this.diagnosticService.getLast());
+    } finally {
+      await loading.dismiss();
     }
+  }
+
+  private async presentLoading(message: string): Promise<HTMLIonLoadingElement> {
+    const loading = await this.loadingCtrl.create({
+      message,
+      spinner: 'crescent'
+    });
+    await loading.present();
+    return loading;
   }
 
   statusLabel(status: UserStatus): string {

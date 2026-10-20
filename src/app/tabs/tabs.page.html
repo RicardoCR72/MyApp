@@ -1,5 +1,27 @@
 <ion-tabs>
 
+  @if (syncStatus$ | async; as sync) {
+    @if (sync.showBanner) {
+      <div class="sync-banner"
+           [class.is-offline]="!sync.isOnline"
+           [class.is-synced]="sync.status === 'synced'"
+           [class.is-syncing]="sync.status === 'syncing'">
+        <div class="sync-banner-content">
+          <ion-icon [name]="sync.icon" class="sync-icon"></ion-icon>
+          <div class="sync-banner-text">
+            <span class="sync-title">{{ sync.title }}</span>
+            <span class="sync-subtitle">{{ sync.subtitle }}</span>
+          </div>
+        </div>
+        @if (!sync.isOnline) {
+          <ion-button size="small" fill="outline" color="light" (click)="retrySync()">
+            Reintentar
+          </ion-button>
+        }
+      </div>
+    }
+  }
+
   <ion-tab-bar slot="bottom">
     <ion-tab-button tab="tab1" href="/tabs/tab1">
       <ion-icon aria-hidden="true" name="person-circle-outline"></ion-icon>

@@ -5,52 +5,19 @@ import { AuthService } from './auth.service';
 import { ConnectionService } from './connection.service';
 import { CacheService, DataLoadState } from './cache.service';
 
-export type OracleSport = 'MLB' | 'NFL';
+import {
+  OracleSport,
+  OraclePrediction,
+  PredictionFilters,
+  PredictionListResponse
+} from '../models';
 
-export interface OraclePrediction {
-  id: number;
-  externalGameId: string;
-  sport: OracleSport;
-  season: number;
-  week: number | null;
-  gameDate: string;
-  awayTeam: string;
-  homeTeam: string;
-  gameStatus: string;
-  venue: string | null;
-  marketType: string;
-  participantName: string | null;
-  line: number;
-  predictedValue: number | null;
-  selection: string;
-  probability: number;
-  overProbability: number | null;
-  underProbability: number | null;
-  confidence: number | null;
-  edge: number | null;
-  odds: number | null;
-  expectedValue: number | null;
-  pickStatus: string;
-  calibrationMethod: string | null;
-  modelVersion: string;
-  injuryStatus: string | null;
-  notes: string | null;
-  generatedAt: string;
-}
-
-interface PredictionListResponse {
-  success: boolean;
-  sport: OracleSport;
-  count: number;
-  data: OraclePrediction[];
-}
-
-export interface PredictionFilters {
-  date?: string;
-  week?: number;
-  marketType?: string;
-  pickStatus?: string;
-}
+export {
+  OracleSport,
+  OraclePrediction,
+  PredictionFilters,
+  PredictionListResponse
+};
 
 @Injectable({ providedIn: 'root' })
 export class OracleService {

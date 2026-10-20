@@ -9,6 +9,7 @@ import {
   IonicRouteStrategy,
   provideIonicAngular
 } from '@ionic/angular';
+import { provideHttpClient } from '@angular/common/http';
 
 import { AppRoutingModule } from './app-routing.module';
 import { AppComponent } from './app.component';
@@ -21,6 +22,7 @@ import { environment } from '../environments/environment';
   imports: [BrowserModule, IonApp, IonRouterOutlet, AppRoutingModule],
   providers: [
     provideIonicAngular(),
+    provideHttpClient(),
     provideServiceWorker('ngsw-worker.js', {
       enabled: environment.production,
       registrationStrategy: 'registerWhenStable:3000'
