@@ -23,9 +23,37 @@ export class Tab3Page {
   currentUser: AuthUser | null = null;
   selectedSport: OracleSport = 'MLB';
   predictions: OraclePrediction[] = [];
+  selectedPrediction: OraclePrediction | null = null;
+  selectedFilter: 'ALL' | 'PICKS' | 'OVER' | 'UNDER' = 'ALL';
+  viewMode: 'interactive' | 'cards' = 'interactive';
   isLoading = false;
   errorMessage = '';
   cacheMessage = '';
+
+  get filteredPredictions(): OraclePrediction[] {
+    return this.predictions.filter(p => {
+      if (this.selectedFilter === 'PICKS') {
+        return p.pickStatus.toUpperCase() === 'PICK';
+      }
+      if (this.selectedFilter === 'OVER') {
+        return p.selection.toUpperCase() === 'OVER';
+      }
+      if (this.selectedFilter === 'UNDER') {
+        return p.selection.toUpperCase() === 'UNDER';
+      }
+      return true;
+    });
+  }
+
+  get totalPicksCount(): number {
+    return this.predictions.filter(p => p.pickStatus.toUpperCase() === 'PICK').length;
+  }
+
+  get averageConfidence(): number {
+    if (this.predictions.length === 0) return 0;
+    const sum = this.predictions.reduce((acc, p) => acc + (p.probability || 0.5), 0);
+    return Math.round((sum / this.predictions.length) * 100);
+  }
 
   ionViewWillEnter(): void {
     this.currentUser = this.authService.getCurrentUser();
@@ -34,7 +62,23 @@ export class Tab3Page {
 
   async changeSport(sport: OracleSport): Promise<void> {
     this.selectedSport = sport;
+    this.selectedPrediction = null;
     await this.loadPredictions();
+  }
+
+  setFilter(filter: 'ALL' | 'PICKS' | 'OVER' | 'UNDER'): void {
+    this.selectedFilter = filter;
+    if (this.selectedPrediction && !this.filteredPredictions.includes(this.selectedPrediction)) {
+      this.selectedPrediction = this.filteredPredictions[0] ?? null;
+    }
+  }
+
+  selectPrediction(prediction: OraclePrediction): void {
+    if (this.selectedPrediction?.id === prediction.id) {
+      this.selectedPrediction = null;
+    } else {
+      this.selectedPrediction = prediction;
+    }
   }
 
   async loadPredictions(event?: { target?: { complete?: () => void } }): Promise<void> {
@@ -43,9 +87,13 @@ export class Tab3Page {
     this.cacheMessage = '';
     try {
       this.predictions = await this.oracleService.getPredictions(this.selectedSport);
+      if (this.predictions.length > 0 && !this.selectedPrediction) {
+        // Select the first value pick by default for the interactive graphic
+        this.selectedPrediction = this.predictions.find(p => p.pickStatus.toUpperCase() === 'PICK') ?? this.predictions[0];
+      }
       const state = this.oracleService.getLoadState();
       if (state.source === 'cache') {
-        this.cacheMessage = `Sin conexión con la API. Mostrando predicciones guardadas el ${this.formatCacheDate(state.savedAt)}.`;
+        this.cacheMessage = `Datos cargados desde el dataset del modelo (${this.formatCacheDate(state.savedAt)}).`;
       }
     } catch (error: unknown) {
       this.predictions = [];

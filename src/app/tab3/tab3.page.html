@@ -1,6 +1,6 @@
 <ion-header class="ion-no-border">
   <ion-toolbar>
-    <ion-title>Oráculo deportivo</ion-title>
+    <ion-title>Oráculo deportivo · MLB & NFL</ion-title>
     <ion-buttons slot="end">
       <ion-button (click)="loadPredictions()" aria-label="Actualizar predicciones">
         <ion-icon name="refresh-outline" slot="icon-only"></ion-icon>
@@ -17,28 +17,30 @@
   <main class="oracle-shell">
     <section class="hero-card">
       <div>
-        <p class="eyebrow">Modelos predictivos · MLB + NFL</p>
-        <h1>Bienvenido al Oráculo, {{ currentUser?.fullName || currentUser?.username }}</h1>
+        <p class="eyebrow">Modelos Predictivos · Datos Históricos & ESPN/DraftKings</p>
+        <h1>Bienvenido al Oráculo, {{ currentUser?.fullName || currentUser?.username || 'Usuario' }}</h1>
         <p>
-          Probabilidades calibradas, líneas, edge y valor esperado obtenidos de los modelos Python.
+          Líneas de apuestas de DraftKings/ESPN contrastadas con las proyecciones y probabilidades de los modelos de Machine Learning.
         </p>
       </div>
       <ion-icon [name]="selectedSport === 'MLB' ? 'baseball-outline' : 'american-football-outline'"></ion-icon>
     </section>
 
+    <!-- Selector de Deporte -->
     <ion-segment
       [value]="selectedSport"
       (ionChange)="changeSport($any($event.detail.value))"
       aria-label="Seleccionar deporte"
     >
       <ion-segment-button value="MLB">
-        <ion-label>MLB</ion-label>
+        <ion-label>⚾ MLB (Béisbol)</ion-label>
       </ion-segment-button>
       <ion-segment-button value="NFL">
-        <ion-label>NFL</ion-label>
+        <ion-label>🏈 NFL (Fútbol Americano)</ion-label>
       </ion-segment-button>
     </ion-segment>
 
+    <!-- Métricas del Resumen -->
     <section class="summary-grid">
       <article>
         <span>Deporte</span>
@@ -48,45 +50,211 @@
         <span>Predicciones</span>
         <strong>{{ predictions.length }}</strong>
       </article>
+      <article class="highlight-pick">
+        <span>Picks de Valor (⭐)</span>
+        <strong>{{ totalPicksCount }}</strong>
+      </article>
       <article>
-        <span>Estado</span>
-        <strong>{{ isLoading ? 'Actualizando' : 'Conectado' }}</strong>
+        <span>Confianza Promedio</span>
+        <strong>{{ averageConfidence }}%</strong>
       </article>
     </section>
 
     @if (errorMessage) {
       <section class="feedback error">
         <ion-icon name="alert-circle-outline"></ion-icon>
-        <div><strong>No se pudieron cargar los datos</strong><span>{{ errorMessage }}</span></div>
+        <div><strong>Aviso del Oráculo</strong><span>{{ errorMessage }}</span></div>
       </section>
     }
 
     @if (cacheMessage) {
       <section class="feedback warning">
         <ion-icon name="cloud-offline-outline"></ion-icon>
-        <div><strong>Modo sin conexión</strong><span>{{ cacheMessage }}</span></div>
+        <div><strong>Dataset Cargado</strong><span>{{ cacheMessage }}</span></div>
       </section>
     }
 
     @if (isLoading) {
       <section class="loading-state">
         <ion-spinner name="crescent"></ion-spinner>
-        <span>Cargando predicciones {{ selectedSport }}…</span>
+        <span>Cargando análisis de {{ selectedSport }}…</span>
       </section>
     }
 
     @if (!isLoading && predictions.length > 0) {
+      <!-- SECCIÓN DE INTERACCIÓN GRÁFICA INTERACTIVA -->
+      <section class="interactive-chart-container">
+        <div class="chart-header">
+          <div>
+            <span class="chart-badge">⚡ COMPONENTE VISUAL INTERACTIVO</span>
+            <h2>Comparativa Gráfica: Línea DraftKings vs Proyección IA</h2>
+            <p>Toca o haz clic en cualquier barra de partido para inspeccionar el análisis y probabilidades.</p>
+          </div>
+          <div class="chart-legend">
+            <span class="legend-item"><span class="legend-dot dk"></span> Línea DK</span>
+            <span class="legend-item"><span class="legend-dot ai"></span> Proyección IA</span>
+          </div>
+        </div>
+
+        <!-- Barras de Gráfico Interactivo Horizontal/Scrollable -->
+        <div class="chart-bars-wrapper">
+          @for (p of predictions; track p.id) {
+            <div
+              class="chart-bar-group"
+              [class.active]="selectedPrediction?.id === p.id"
+              [class.is-pick]="p.pickStatus === 'PICK'"
+              (click)="selectPrediction(p)"
+            >
+              <div class="bar-game-label">
+                <strong>{{ p.awayTeam }} @ {{ p.homeTeam }}</strong>
+                <span class="bar-market">{{ p.selection }} · {{ probabilityPercent(p.probability) }}</span>
+              </div>
+
+              <!-- Barras comparativas -->
+              <div class="bars-track">
+                <!-- Barra Línea DraftKings -->
+                <div class="bar-pair">
+                  <div
+                    class="bar-fill dk-fill"
+                    [style.width.%]="selectedSport === 'NFL' ? (p.line / 65) * 100 : (p.line / 12) * 100"
+                  >
+                    <span class="bar-value">DK: {{ p.line }}</span>
+                  </div>
+                </div>
+                <!-- Barra Proyección IA -->
+                <div class="bar-pair">
+                  <div
+                    class="bar-fill ai-fill"
+                    [style.width.%]="selectedSport === 'NFL' ? ((p.predictedValue || p.line) / 65) * 100 : ((p.predictedValue || p.line) / 12) * 100"
+                  >
+                    <span class="bar-value">IA: {{ p.predictedValue || p.line }}</span>
+                  </div>
+                </div>
+              </div>
+
+              @if (p.pickStatus === 'PICK') {
+                <span class="pick-indicator">⭐ PICK</span>
+              }
+            </div>
+          }
+        </div>
+
+        <!-- INSPECTOR VISUAL DEL PARTIDO SELECCIONADO -->
+        @if (selectedPrediction) {
+          <div class="selected-inspector-panel">
+            <div class="inspector-header">
+              <div>
+                <span class="inspector-tag">{{ selectedPrediction.marketType }} · {{ selectedPrediction.venue || 'Estadio' }}</span>
+                <h3>{{ selectedPrediction.awayTeam }} vs {{ selectedPrediction.homeTeam }}</h3>
+                <p class="inspector-date">{{ selectedPrediction.gameDate | date:'medium' }}</p>
+              </div>
+              <div class="inspector-badge" [class.is-pick]="selectedPrediction.pickStatus === 'PICK'">
+                {{ selectedPrediction.pickStatus }}
+              </div>
+            </div>
+
+            <!-- Interacción Gráfica: Barra de Distribución de Probabilidades Over vs Under -->
+            <div class="prob-distribution-box">
+              <div class="prob-labels">
+                <span class="over-label">OVER {{ probabilityPercent(selectedPrediction.overProbability) }}</span>
+                <span class="prob-title">Distribución de Probabilidad IA</span>
+                <span class="under-label">UNDER {{ probabilityPercent(selectedPrediction.underProbability) }}</span>
+              </div>
+              <div class="interactive-prob-meter">
+                <div
+                  class="meter-slice over-slice"
+                  [style.width.%]="(selectedPrediction.overProbability || 0.5) * 100"
+                ></div>
+                <div
+                  class="meter-slice under-slice"
+                  [style.width.%]="(selectedPrediction.underProbability || 0.5) * 100"
+                ></div>
+              </div>
+            </div>
+
+            <!-- Cuadrícula de métricas del inspector -->
+            <div class="inspector-metrics">
+              <div class="metric-box">
+                <span class="m-label">Línea Apuesta</span>
+                <span class="m-val">{{ selectedPrediction.line }}</span>
+              </div>
+              <div class="metric-box highlight">
+                <span class="m-label">Proyección IA</span>
+                <span class="m-val">{{ selectedPrediction.predictedValue ?? 'N/D' }}</span>
+              </div>
+              <div class="metric-box">
+                <span class="m-label">Ventaja (Edge)</span>
+                <span class="m-val" [class.positive]="(selectedPrediction.edge || 0) > 0">
+                  {{ signedNumber(selectedPrediction.edge) }}
+                </span>
+              </div>
+              <div class="metric-box">
+                <span class="m-label">Valor Esperado</span>
+                <span class="m-val" [class.positive]="(selectedPrediction.expectedValue || 0) > 0">
+                  {{ expectedValueLabel(selectedPrediction.expectedValue) }}
+                </span>
+              </div>
+            </div>
+
+            @if (selectedPrediction.notes) {
+              <div class="inspector-notes">
+                <ion-icon name="information-circle-outline"></ion-icon>
+                <span><strong>Análisis del modelo:</strong> {{ selectedPrediction.notes }}</span>
+              </div>
+            }
+          </div>
+        }
+      </section>
+
+      <!-- FILTROS INTERACTIVOS Y LISTADO DE TARJETAS -->
       <section class="section-heading">
         <div>
-          <p class="eyebrow">Mercados disponibles</p>
-          <h2>Predicciones {{ selectedSport }}</h2>
+          <p class="eyebrow">Catálogo de Predicciones</p>
+          <h2>Partidos de {{ selectedSport }}</h2>
         </div>
-        <ion-badge color="tertiary">Datos desde XAMPP</ion-badge>
+        <div class="filter-chips">
+          <button
+            type="button"
+            class="filter-chip"
+            [class.active]="selectedFilter === 'ALL'"
+            (click)="setFilter('ALL')"
+          >
+            Todos ({{ predictions.length }})
+          </button>
+          <button
+            type="button"
+            class="filter-chip is-pick"
+            [class.active]="selectedFilter === 'PICKS'"
+            (click)="setFilter('PICKS')"
+          >
+            ⭐ Picks de Valor ({{ totalPicksCount }})
+          </button>
+          <button
+            type="button"
+            class="filter-chip is-over"
+            [class.active]="selectedFilter === 'OVER'"
+            (click)="setFilter('OVER')"
+          >
+            📈 Over
+          </button>
+          <button
+            type="button"
+            class="filter-chip is-under"
+            [class.active]="selectedFilter === 'UNDER'"
+            (click)="setFilter('UNDER')"
+          >
+            📉 Under
+          </button>
+        </div>
       </section>
 
       <section class="predictions-grid">
-        @for (prediction of predictions; track prediction.id) {
-          <article class="prediction-card">
+        @for (prediction of filteredPredictions; track prediction.id) {
+          <article
+            class="prediction-card"
+            [class.selected-card]="selectedPrediction?.id === prediction.id"
+            (click)="selectPrediction(prediction)"
+          >
             <div class="card-heading">
               <div>
                 <p class="game-date">{{ prediction.gameDate | date:'medium' }}</p>
@@ -110,30 +278,40 @@
             <div class="pick-panel" [class.under]="prediction.selection === 'UNDER'">
               <span>Selección del modelo</span>
               <strong>{{ prediction.selection }}</strong>
-              <small>{{ probabilityPercent(prediction.probability) }} de probabilidad</small>
+              <small>{{ probabilityPercent(prediction.probability) }} de probabilidad calculada</small>
             </div>
+
+            <!-- Interacción Gráfica embebida en tarjeta: Barra de Distribución -->
+            @if (prediction.overProbability !== null || prediction.underProbability !== null) {
+              <div class="card-prob-bar-container">
+                <div class="card-prob-labels">
+                  <span>Over {{ probabilityPercent(prediction.overProbability) }}</span>
+                  <span>Under {{ probabilityPercent(prediction.underProbability) }}</span>
+                </div>
+                <div class="card-prob-track">
+                  <div
+                    class="card-prob-fill over"
+                    [style.width.%]="(prediction.overProbability || 0.5) * 100"
+                  ></div>
+                  <div
+                    class="card-prob-fill under"
+                    [style.width.%]="(prediction.underProbability || 0.5) * 100"
+                  ></div>
+                </div>
+              </div>
+            }
 
             <div class="metrics-grid">
               <div><span>Proyección</span><strong>{{ prediction.predictedValue ?? 'N/D' }}</strong></div>
-              <div><span>Edge</span><strong>{{ signedNumber(prediction.edge) }}</strong></div>
+              <div><span>Edge</span><strong [class.positive]="(prediction.edge || 0) > 0">{{ signedNumber(prediction.edge) }}</strong></div>
               <div><span>Cuota</span><strong>{{ oddsLabel(prediction.odds) }}</strong></div>
-              <div><span>EV</span><strong>{{ expectedValueLabel(prediction.expectedValue) }}</strong></div>
+              <div><span>EV</span><strong [class.positive]="(prediction.expectedValue || 0) > 0">{{ expectedValueLabel(prediction.expectedValue) }}</strong></div>
             </div>
-
-            @if (prediction.overProbability !== null || prediction.underProbability !== null) {
-              <div class="probability-row">
-                <div><span>OVER</span><strong>{{ probabilityPercent(prediction.overProbability) }}</strong></div>
-                <div><span>UNDER</span><strong>{{ probabilityPercent(prediction.underProbability) }}</strong></div>
-              </div>
-            }
 
             <footer>
               <span>Modelo: {{ prediction.modelVersion }}</span>
               @if (prediction.calibrationMethod) {
                 <span>Calibración: {{ prediction.calibrationMethod }}</span>
-              }
-              @if (prediction.injuryStatus) {
-                <span>Lesión: {{ prediction.injuryStatus }}</span>
               }
             </footer>
           </article>
@@ -145,7 +323,7 @@
       <section class="empty-state">
         <ion-icon name="analytics-outline"></ion-icon>
         <h2>No hay predicciones {{ selectedSport }}</h2>
-        <p>Ejecuta el modelo Python o cambia el deporte seleccionado.</p>
+        <p>Carga el dataset de predicciones o cambia de deporte.</p>
       </section>
     }
   </main>
