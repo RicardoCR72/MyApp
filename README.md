@@ -1,10 +1,27 @@
-# Oráculo MLB · Ionic Angular
+# Oráculo Deportivo · MiApp (Ionic + Angular + Capacitor)
 
-Aplicación móvil/web versión 1.0 para consultar predicciones de MLB y NFL, administrar usuarios y controlar el acceso mediante autenticación. El proyecto está construido con Ionic + Angular usando NgModules, una API PHP y MariaDB/MySQL.
+Aplicación móvil híbrida y multiplataforma para consultar proyecciones deportivas de **MLB** y **NFL**, administrar usuarios mediante un servicio web REST en PHP/MySQL, con persistencia local resiliente, sincronización offline, elementos multimedia interactivos y paquete Android APK listo para distribución.
 
-## Objetivo
+---
 
-Centralizar en una interfaz sencilla los resultados del modelo predictivo **Oráculo MLB**, especialmente las probabilidades Over/Under de primeras cinco entradas (F5). La primera etapa implementa autenticación y administración de usuarios; la siguiente conectará el modelo Python para publicar predicciones diarias.
+## 📋 Matriz de Cumplimiento de Requisitos
+
+| # | Requisito Solicitado | Estado | Implementación y Evidencia en el Código |
+|---|---|:---:|---|
+| **1** | **Arquitectura Cliente-Servidor** | ✅ **Cumplido** | Cliente móvil Ionic/Angular/Capacitor en [`src/`](src/) y Servidor Web REST PHP/Apache/MySQL en [`backend/php-api/`](backend/php-api/). Documentado en [`docs/cliente-movil-servicio-web.md`](docs/cliente-movil-servicio-web.md). |
+| **2** | **API REST** | ✅ **Cumplido** | Endpoints HTTP con métodos GET, POST, PUT, PATCH, DELETE y OPTIONS con payloads JSON y Bearer Token en [`backend/php-api/`](backend/php-api/) (`login.php`, `users.php`, `predictions.php`). |
+| **3** | **CRUD remoto** | ✅ **Cumplido** | Operaciones Create (POST 201), Read (GET 200), Update (PUT/PATCH 200) y Delete (DELETE 200) integradas en [`src/app/services/user.service.ts`](src/app/services/user.service.ts) y vista interactiva en [`src/app/tab2/tab2.page.ts`](src/app/tab2/tab2.page.ts). |
+| **4** | **Persistencia local** | ✅ **Cumplido** | Almacenamiento local mediante `@capacitor/preferences` en [`src/app/services/cache.service.ts`](src/app/services/cache.service.ts) y [`src/app/services/auth.service.ts`](src/app/services/auth.service.ts) para sesión, usuarios y predicciones. |
+| **5** | **Sincronización** | ✅ **Cumplido** | [`src/app/services/sync.service.ts`](src/app/services/sync.service.ts) con listeners reactivos `online`/`offline`, banner dinámico en [`TabsPage`](src/app/tabs/tabs.page.html) y re-sincronización automática de datos al recuperar conexión. |
+| **6** | **Manejo de errores de red** | ✅ **Cumplido** | Detección de pérdida de red, diagnósticos técnicos en [`src/app/services/api-diagnostic.service.ts`](src/app/services/api-diagnostic.service.ts), modal de error en [`api-error-modal`](src/app/shared/api-error-modal/) y fallback a datos locales sin congelar la interfaz. |
+| **7** | **Elemento multimedia** | ✅ **Cumplido** | **Triple componente multimedia:**<br>1. *Audio y Voz IA:* Reproductor multimedia con Web Speech API y Web Audio API con ecualizador animado por CSS en [`src/app/tab3/tab3.page.html`](src/app/tab3/tab3.page.html).<br>2. *Visualización Gráfica Interactiva:* Gráfico comparativo de líneas vs proyección IA y barra de distribución de probabilidades Over/Under en Tab 3.<br>3. *Foto/Avatar:* Selector multimedia de foto de perfil y avatar con almacenamiento local en [`src/app/tab1/tab1.page.html`](src/app/tab1/tab1.page.html). |
+| **8** | **Interfaz funcional** | ✅ **Cumplido** | Navegación por tabs (Sesión, Usuarios, Oráculo, Origen) 100% responsiva para móvil y escritorio con feedback visual (`LoadingController`, spinners, badges, toasts). |
+| **9** | **Repositorio** | ✅ **Cumplido** | Repositorio Git estructurado en [`https://github.com/RicardoCR72/MyApp.git`](https://github.com/RicardoCR72/MyApp.git) con historial limpio y `.gitignore` configurado. |
+| **10** | **APK/demostración** | ✅ **Cumplido** | Instalador Android compilado ubicado en [`apk/app-debug.apk`](apk/app-debug.apk) con guía de instalación y guion de demostración en [`apk/README.md`](apk/README.md) y [`ENTREGA_ELEMENTO_MULTIMEDIA_IA.md`](ENTREGA_ELEMENTO_MULTIMEDIA_IA.md). |
+| **11** | **Documentación de endpoints** | ✅ **Cumplido** | Documentación exhaustiva de endpoints, métodos, headers, request/response body, códigos HTTP y ejemplos cURL en [`docs/documentacion-endpoints.md`](docs/documentacion-endpoints.md). |
+| **12** | **Bitácora de IA** | ✅ **Cumplido** | Registro cronológico integral de co-programación con prompts, desafíos técnicos, validación humana y conclusiones en [`BITACORA_IA.md`](BITACORA_IA.md) y [`docs/bitacora-ia.md`](docs/bitacora-ia.md). |
+
+---
 
 ## Vistas implementadas
 

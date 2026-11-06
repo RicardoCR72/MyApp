@@ -30,6 +30,15 @@ export class Tab3Page {
   errorMessage = '';
   cacheMessage = '';
 
+  // Elemento Multimedia: Narrador de Audio & Síntesis de voz del Oráculo
+  isAudioPlaying = false;
+  isAudioPaused = false;
+  audioSpeed = 1.0;
+  audioProgress = 0;
+  private audioTimer: ReturnType<typeof setInterval> | null = null;
+  private currentUtterance: SpeechSynthesisUtterance | null = null;
+  private audioCtx: AudioContext | null = null;
+
   get filteredPredictions(): OraclePrediction[] {
     return this.predictions.filter(p => {
       if (this.selectedFilter === 'PICKS') {
@@ -145,6 +154,134 @@ export class Tab3Page {
     if (normalized === 'PICK') return 'success';
     if (normalized.includes('LESION') || normalized.includes('REVISAR')) return 'warning';
     return 'medium';
+  }
+
+  ionViewWillLeave(): void {
+    this.stopAudio();
+  }
+
+  /**
+   * Elemento Multimedia: Reproduce el análisis de IA por síntesis de voz y efectos de audio
+   */
+  playAudioAnalysis(prediction?: OraclePrediction): void {
+    const target = prediction || this.selectedPrediction || (this.predictions.length > 0 ? this.predictions[0] : null);
+    if (!target) return;
+
+    this.stopAudio();
+    this.playTone(587.33, 0.12);
+    setTimeout(() => this.playTone(880, 0.18), 120);
+
+    if (typeof window !== 'undefined' && 'speechSynthesis' in window) {
+      window.speechSynthesis.cancel();
+      const sportName = this.selectedSport === 'MLB' ? 'Béisbol de Grandes Ligas' : 'Fútbol Americano NFL';
+      const text = `Reporte multimedia del Oráculo Deportivo. ${sportName}. Partido: ${target.awayTeam} contra ${target.homeTeam}. Mercado: ${this.marketLabel(target)}. Línea de la casa de apuestas: ${target.line}. La inteligencia artificial proyecta ${target.predictedValue ?? target.line}, con recomendación hacia ${target.selection}. Probabilidad estimada del ${this.probabilityPercent(target.probability)}. Ventaja estimada sobre la casa: ${this.signedNumber(target.edge)}.`;
+
+      const utterance = new SpeechSynthesisUtterance(text);
+      utterance.lang = 'es-MX';
+      utterance.rate = this.audioSpeed;
+
+      utterance.onstart = () => {
+        this.isAudioPlaying = true;
+        this.isAudioPaused = false;
+        this.startAudioProgress();
+      };
+
+      utterance.onend = () => {
+        this.isAudioPlaying = false;
+        this.isAudioPaused = false;
+        this.audioProgress = 100;
+        this.clearAudioTimer();
+        this.playTone(523.25, 0.2);
+      };
+
+      utterance.onerror = () => {
+        this.isAudioPlaying = false;
+        this.isAudioPaused = false;
+        this.clearAudioTimer();
+      };
+
+      this.currentUtterance = utterance;
+      window.speechSynthesis.speak(utterance);
+    } else {
+      this.isAudioPlaying = true;
+      this.startAudioProgress();
+      setTimeout(() => this.stopAudio(), 6000);
+    }
+  }
+
+  pauseAudio(): void {
+    if (typeof window !== 'undefined' && 'speechSynthesis' in window && this.isAudioPlaying) {
+      if (this.isAudioPaused) {
+        window.speechSynthesis.resume();
+        this.isAudioPaused = false;
+      } else {
+        window.speechSynthesis.pause();
+        this.isAudioPaused = true;
+      }
+    }
+  }
+
+  stopAudio(): void {
+    if (typeof window !== 'undefined' && 'speechSynthesis' in window) {
+      window.speechSynthesis.cancel();
+    }
+    this.isAudioPlaying = false;
+    this.isAudioPaused = false;
+    this.audioProgress = 0;
+    this.clearAudioTimer();
+  }
+
+  toggleAudioSpeed(): void {
+    const speeds = [1.0, 1.25, 1.5];
+    const nextIdx = (speeds.indexOf(this.audioSpeed) + 1) % speeds.length;
+    this.audioSpeed = speeds[nextIdx];
+    if (this.isAudioPlaying) {
+      this.playAudioAnalysis();
+    }
+  }
+
+  private playTone(freq: number, duration: number): void {
+    try {
+      const AudioCtx = window.AudioContext || (window as unknown as { webkitAudioContext: typeof AudioContext }).webkitAudioContext;
+      if (!AudioCtx) return;
+      if (!this.audioCtx) {
+        this.audioCtx = new AudioCtx();
+      }
+      if (this.audioCtx.state === 'suspended') {
+        void this.audioCtx.resume();
+      }
+      const osc = this.audioCtx.createOscillator();
+      const gain = this.audioCtx.createGain();
+      osc.type = 'sine';
+      osc.frequency.setValueAtTime(freq, this.audioCtx.currentTime);
+      gain.gain.setValueAtTime(0.12, this.audioCtx.currentTime);
+      gain.gain.exponentialRampToValueAtTime(0.001, this.audioCtx.currentTime + duration);
+      osc.connect(gain);
+      gain.connect(this.audioCtx.destination);
+      osc.start();
+      osc.stop(this.audioCtx.currentTime + duration);
+    } catch {
+      // AudioContext no interactuado aún o no disponible
+    }
+  }
+
+  private startAudioProgress(): void {
+    this.clearAudioTimer();
+    this.audioProgress = 5;
+    this.audioTimer = setInterval(() => {
+      if (this.isAudioPlaying && !this.isAudioPaused) {
+        if (this.audioProgress < 95) {
+          this.audioProgress += 2;
+        }
+      }
+    }, 300);
+  }
+
+  private clearAudioTimer(): void {
+    if (this.audioTimer) {
+      clearInterval(this.audioTimer);
+      this.audioTimer = null;
+    }
   }
 
   private formatCacheDate(value: string | null): string {

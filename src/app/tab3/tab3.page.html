@@ -82,6 +82,72 @@
     }
 
     @if (!isLoading && predictions.length > 0) {
+      <!-- REPRODUCTOR MULTIMEDIA DE AUDIO Y VOZ (ELEMENTO MULTIMEDIA) -->
+      <section class="multimedia-audio-player">
+        <div class="audio-player-shell">
+          <div class="audio-info">
+            <div class="audio-tag">
+              <ion-icon name="volume-high-outline"></ion-icon>
+              <span>ELEMENTO MULTIMEDIA · NARRADOR DE VOZ IA</span>
+            </div>
+            <h3>
+              {{ selectedPrediction ? (selectedPrediction.awayTeam + ' @ ' + selectedPrediction.homeTeam) : ('Resumen General ' + selectedSport) }}
+            </h3>
+            <p>
+              {{ selectedPrediction ? ('Línea: ' + selectedPrediction.line + ' | Recomendación: ' + selectedPrediction.selection + ' (' + probabilityPercent(selectedPrediction.probability) + ')') : 'Escucha el reporte narrado por la IA sobre las predicciones deportivas actuales.' }}
+            </p>
+          </div>
+
+          <div class="audio-controls-row">
+            <button
+              type="button"
+              class="audio-play-btn"
+              [class.is-playing]="isAudioPlaying && !isAudioPaused"
+              (click)="isAudioPlaying ? pauseAudio() : playAudioAnalysis()"
+              [attr.aria-label]="isAudioPlaying ? 'Pausar audio' : 'Reproducir narración multimedia'"
+            >
+              <ion-icon [name]="isAudioPlaying && !isAudioPaused ? 'pause' : 'play'"></ion-icon>
+              <span>{{ isAudioPlaying ? (isAudioPaused ? 'Reanudar' : 'Pausar') : 'Escuchar Audio IA' }}</span>
+            </button>
+
+            @if (isAudioPlaying) {
+              <button
+                type="button"
+                class="audio-stop-btn"
+                (click)="stopAudio()"
+                aria-label="Detener narración"
+              >
+                <ion-icon name="square"></ion-icon>
+              </button>
+            }
+
+            <button
+              type="button"
+              class="audio-speed-btn"
+              (click)="toggleAudioSpeed()"
+              title="Cambiar velocidad"
+            >
+              {{ audioSpeed }}x
+            </button>
+
+            <!-- Ecualizador de ondas animadas -->
+            <div class="audio-equalizer" [class.active]="isAudioPlaying && !isAudioPaused">
+              <span class="bar bar-1"></span>
+              <span class="bar bar-2"></span>
+              <span class="bar bar-3"></span>
+              <span class="bar bar-4"></span>
+              <span class="bar bar-5"></span>
+            </div>
+          </div>
+
+          @if (isAudioPlaying) {
+            <div class="audio-progress-bar">
+              <div class="audio-progress-fill" [style.width.%]="audioProgress"></div>
+            </div>
+          }
+        </div>
+      </section>
+
       <!-- SECCIÓN DE INTERACCIÓN GRÁFICA INTERACTIVA -->
       <section class="interactive-chart-container">
         <div class="chart-header">
@@ -202,6 +268,17 @@
                 <span><strong>Análisis del modelo:</strong> {{ selectedPrediction.notes }}</span>
               </div>
             }
+
+            <div class="inspector-audio-action">
+              <button
+                type="button"
+                class="inspector-listen-btn"
+                (click)="playAudioAnalysis(selectedPrediction)"
+              >
+                <ion-icon name="volume-medium-outline"></ion-icon>
+                <span>🔊 Escuchar narración con IA de este partido</span>
+              </button>
+            </div>
           </div>
         }
       </section>

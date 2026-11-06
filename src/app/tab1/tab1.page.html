@@ -7,13 +7,57 @@
 <ion-content [fullscreen]="true" class="account-page">
   <main class="account-shell">
     <section class="welcome-card">
-      <div class="avatar">{{ (currentUser?.fullName || currentUser?.username || 'U').charAt(0).toUpperCase() }}</div>
+      <div class="avatar-wrapper" (click)="toggleAvatarPicker()">
+        @if (avatarImage && !avatarImage.startsWith('data:text/plain')) {
+          <img [src]="avatarImage" alt="Avatar" class="avatar-img" />
+        } @else if (avatarImage && avatarImage.startsWith('data:text/plain')) {
+          <div class="avatar preset-avatar">{{ avatarImage.replace('data:text/plain;utf8,', '') }}</div>
+        } @else {
+          <div class="avatar">{{ (currentUser?.fullName || currentUser?.username || 'U').charAt(0).toUpperCase() }}</div>
+        }
+        <span class="avatar-badge" title="Cambiar foto"><ion-icon name="camera-outline"></ion-icon></span>
+      </div>
       <div>
         <p class="eyebrow">Sesión activa</p>
         <h1>{{ currentUser?.fullName || 'Usuario del Oráculo' }}</h1>
         <p>{{ currentUser?.email }}</p>
+        <button type="button" class="btn-avatar-edit" (click)="toggleAvatarPicker()">
+          <ion-icon name="image-outline"></ion-icon> Cambiar foto / avatar
+        </button>
       </div>
     </section>
+
+    <!-- Panel de selección multimedia de avatar -->
+    @if (showAvatarPicker) {
+      <section class="avatar-picker-card">
+        <div class="picker-header">
+          <strong>Elemento Multimedia · Foto de Perfil</strong>
+          <button type="button" class="close-picker-btn" (click)="toggleAvatarPicker()">✕</button>
+        </div>
+        <p class="picker-hint">Selecciona un avatar o sube una imagen desde tu dispositivo (persistente con Preferences):</p>
+        
+        <div class="preset-row">
+          @for (preset of presetAvatars; track preset.label) {
+            <button type="button" class="preset-btn" (click)="selectPresetAvatar(preset)" [title]="preset.label">
+              <span>{{ preset.emoji }}</span>
+            </button>
+          }
+        </div>
+
+        <div class="upload-actions">
+          <label class="file-upload-btn">
+            <ion-icon name="cloud-upload-outline"></ion-icon>
+            <span>Subir imagen o foto</span>
+            <input type="file" accept="image/*" (change)="onFileSelected($event)" hidden />
+          </label>
+          @if (avatarImage) {
+            <button type="button" class="btn-remove-avatar" (click)="removeAvatar()">
+              Restablecer inicial
+            </button>
+          }
+        </div>
+      </section>
+    }
 
     <section class="details-card">
       <div class="detail-row">
@@ -33,7 +77,7 @@
     @if (sessionRestored) {
       <section class="persistence-card">
         <strong>Persistencia verificada</strong>
-        <span>La sesión fue restaurada con Capacitor Preferences.</span>
+        <span>La sesión y el perfil fueron restaurados con Capacitor Preferences.</span>
       </section>
     }
 
