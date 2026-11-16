@@ -1,0 +1,91 @@
+<ion-content [fullscreen]="true" class="map-screen" [scrollY]="false">
+
+  <!-- ==================== HEADER FLOTANTE SUPERIOR ==================== -->
+  <header class="top-floating-header">
+    <div class="header-card">
+      <div class="status-row">
+        <div class="status-indicator" [class.online]="geoState.coords !== null" [class.error]="geoState.status === 'denied' || geoState.status === 'error'">
+          <span class="pulse-dot"></span>
+          <strong>{{ geoState.coords ? 'GPS Conectado' : (geoState.status === 'denied' ? 'Permiso Denegado' : 'Buscando GPS...') }}</strong>
+        </div>
+
+        <div class="mode-pill-toggle">
+          <button [class.active]="mapMode === 'leaflet'" (click)="onMapModeChange({detail: {value: 'leaflet'}})">Leaflet</button>
+          <button [class.active]="mapMode === 'leafmap'" (click)="onMapModeChange({detail: {value: 'leafmap'}})">🍃 Leafmap</button>
+        </div>
+      </div>
+
+      <!-- Coordenadas en tiempo real -->
+      <div class="coords-bar" *ngIf="geoState.coords" (click)="copyCoords()">
+        <ion-icon name="location" color="primary"></ion-icon>
+        <span class="coords-text">{{ geoState.coords.latitude | number:'1.5-5' }}, {{ geoState.coords.longitude | number:'1.5-5' }}</span>
+        <span class="acc-text">±{{ geoState.coords.accuracy | number:'1.0-0' }}m</span>
+        <span class="copy-tag">{{ copySuccess ? '¡Copiado!' : 'Copiar' }}</span>
+      </div>
+
+      <!-- Alerta si el permiso fue denegado -->
+      <div class="denied-alert" *ngIf="geoState.status === 'denied' || geoState.status === 'error'">
+        <ion-icon name="alert-circle" color="danger"></ion-icon>
+        <span>{{ geoState.errorMessage || 'Acceso a ubicación desactivado.' }}</span>
+        <button (click)="requestLocation()" class="retry-inline-btn">Reintentar</button>
+      </div>
+    </div>
+  </header>
+
+  <!-- ==================== CONTENEDOR DE MAPAS ==================== -->
+  <main class="map-viewport">
+    <!-- Modo 1: Leaflet Nativo -->
+    <div [style.display]="mapMode === 'leaflet' ? 'block' : 'none'" class="leaflet-full">
+      <div id="leaflet-map" class="map-canvas"></div>
+
+      <!-- Botón Flotante para Ubicación -->
+      <ion-fab slot="fixed" vertical="bottom" horizontal="end" class="locate-fab">
+        <ion-fab-button (click)="recenterOnUser()" color="primary" title="Mi ubicación">
+          <ion-icon name="locate"></ion-icon>
+        </ion-fab-button>
+      </ion-fab>
+    </div>
+
+    <!-- Modo 2: Leafmap (Python) -->
+    <div *ngIf="mapMode === 'leafmap'" class="leafmap-full">
+      <iframe [src]="leafmapUrl" class="leafmap-frame" frameborder="0"></iframe>
+    </div>
+  </main>
+
+  <!-- ==================== TRAY / BOTTOM SHEET FLOTANTE ==================== -->
+  <section class="bottom-floating-tray" *ngIf="closestVenue && mapMode === 'leaflet'" [class.collapsed]="!isSheetExpanded">
+    <div class="tray-handle-bar" (click)="toggleSheet()">
+      <div class="handle-line"></div>
+    </div>
+
+    <div class="tray-content">
+      <!-- Tarjeta del estadio seleccionado o más cercano -->
+      <div class="venue-hero-card" *ngIf="selectedVenue">
+        <div class="vh-icon">{{ selectedVenue.emoji }}</div>
+        <div class="vh-info">
+          <div class="vh-title-row">
+            <h3>{{ selectedVenue.name }}</h3>
+            <span class="vh-badge" [class]="selectedVenue.league.toLowerCase()">{{ selectedVenue.league }}</span>
+          </div>
+          <p class="vh-team">{{ selectedVenue.team }}</p>
+          <p class="vh-city">📍 {{ selectedVenue.city }}, {{ selectedVenue.country }}</p>
+        </div>
+
+        <div class="vh-distance" *ngIf="selectedVenue.distanceKm !== undefined">
+          <strong>{{ selectedVenue.distanceKm }}</strong>
+          <span>km ({{ selectedVenue.bearing }})</span>
+        </div>
+      </div>
+
+      <!-- Carrusel horizontal de sedes deportivas ordenadas por distancia -->
+      <div class="venues-chips-scroll">
+        <button *ngFor="let v of venues" class="venue-chip-pill" [class.selected]="selectedVenue?.id === v.id" (click)="selectAndFlyToVenue(v)">
+          <span>{{ v.emoji }}</span>
+          <span class="vc-name">{{ v.name }}</span>
+          <strong class="vc-dist" *ngIf="v.distanceKm !== undefined">{{ v.distanceKm }} km</strong>
+        </button>
+      </div>
+    </div>
+  </section>
+
+</ion-content>

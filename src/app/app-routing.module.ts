@@ -22,6 +22,7 @@ const routes: Routes = [
     redirectTo: 'login'
   }
 ];
+
 @NgModule({
   imports: [
     RouterModule.forRoot(routes, { preloadingStrategy: PreloadAllModules })

@@ -2,18 +2,16 @@ import { NgModule } from '@angular/core';
 import { CommonModule } from '@angular/common';
 import { FormsModule } from '@angular/forms';
 import {
-  IonBadge,
-  IonButton,
-  IonIcon,
-  IonLabel,
-  IonSpinner,
+  IonTabs,
   IonTabBar,
   IonTabButton,
-  IonTabs
+  IonIcon,
+  IonLabel,
+  IonRouterOutlet,
+  IonBadge
 } from '@ionic/angular';
 
 import { TabsPageRoutingModule } from './tabs-routing.module';
-
 import { TabsPage } from './tabs.page';
 
 @NgModule({
@@ -25,9 +23,8 @@ import { TabsPage } from './tabs.page';
     IonTabButton,
     IonIcon,
     IonLabel,
-    IonButton,
+    IonRouterOutlet,
     IonBadge,
-    IonSpinner,
     TabsPageRoutingModule
   ],
   declarations: [TabsPage]

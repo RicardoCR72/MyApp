@@ -122,6 +122,9 @@
           <button type="submit" [disabled]="isAnimating">
             {{ isAnimating ? 'Validando…' : 'Iniciar sesión' }}
           </button>
+          <button type="button" class="demo-btn" (click)="loginAsGuest()" [disabled]="isAnimating" style="margin-top: 10px; background: rgba(56, 189, 248, 0.15); color: #38bdf8; border: 1px solid rgba(56, 189, 248, 0.35); border-radius: 8px; padding: 10px 16px; font-weight: 700; width: 100%; cursor: pointer;">
+            ⚡ Explorar en Modo Demo (Acceso Rápido)
+          </button>
         </div>
       </form>
 

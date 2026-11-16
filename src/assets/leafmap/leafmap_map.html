@@ -1,0 +1,1137 @@
+<!DOCTYPE html>
+<html>
+<head>
+    
+    <meta http-equiv="content-type" content="text/html; charset=UTF-8" />
+    <script src="https://cdn.jsdelivr.net/npm/leaflet@1.9.4/dist/leaflet.js"></script>
+    <script src="https://code.jquery.com/jquery-3.7.1.min.js"></script>
+    <script src="https://cdn.jsdelivr.net/npm/bootstrap@5.2.2/dist/js/bootstrap.bundle.min.js"></script>
+    <script src="https://cdnjs.cloudflare.com/ajax/libs/Leaflet.awesome-markers/2.0.2/leaflet.awesome-markers.js"></script>
+    <link rel="stylesheet" href="https://cdn.jsdelivr.net/npm/leaflet@1.9.4/dist/leaflet.css"/>
+    <link rel="stylesheet" href="https://cdn.jsdelivr.net/npm/bootstrap@5.2.2/dist/css/bootstrap.min.css"/>
+    <link rel="stylesheet" href="https://cdn.jsdelivr.net/npm/@fortawesome/fontawesome-free@6.2.0/css/all.min.css"/>
+    <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/Leaflet.awesome-markers/2.0.2/leaflet.awesome-markers.css"/>
+    <link rel="stylesheet" href="https://cdn.jsdelivr.net/gh/python-visualization/folium/folium/templates/leaflet.awesome.rotate.min.css"/>
+    
+            <meta name="viewport" content="width=device-width,
+                initial-scale=1.0, maximum-scale=1.0, user-scalable=no" />
+            <style>
+                #map_6d87c3776bcbf16777ac2de51dfae7f4 {
+                    position: relative;
+                    width: 100.0vw;
+                    height: 100.0vh;
+
+                    left: 0.0%;
+                    top: 0.0%;
+                }
+                .leaflet-container { font-size: 1rem; }
+            </style>
+
+            <style>html, body {
+                width: 100%;
+                height: 100%;
+                margin: 0;
+                padding: 0;
+            }
+            </style>
+
+            <style>/*
+ * Glyphicons Halflings -- the icon font used by folium's default Awesome Markers
+ * (Icon(prefix="glyphicon")). Extracted from Bootstrap 3's glyphicon rules only.
+ *
+ * folium previously loaded netdna's bootstrap-glyphicons.css, which despite its
+ * name ships a full Bootstrap-3 base stylesheet (normalize reset + global `body`
+ * rules) that leaked onto the host page (GH-1820). This file provides just the
+ * @font-face and .glyphicon/.glyphicon-* rules needed for the markers, with no
+ * page-wide side effects. Font files are served from jsDelivr.
+ */
+@font-face{font-family:'Glyphicons Halflings';src:url('https://cdn.jsdelivr.net/npm/bootstrap@3.3.7/fonts/glyphicons-halflings-regular.eot');src:url('https://cdn.jsdelivr.net/npm/bootstrap@3.3.7/fonts/glyphicons-halflings-regular.eot?#iefix') format('embedded-opentype'),url('https://cdn.jsdelivr.net/npm/bootstrap@3.3.7/fonts/glyphicons-halflings-regular.woff') format('woff'),url('https://cdn.jsdelivr.net/npm/bootstrap@3.3.7/fonts/glyphicons-halflings-regular.ttf') format('truetype'),url('https://cdn.jsdelivr.net/npm/bootstrap@3.3.7/fonts/glyphicons-halflings-regular.svg#glyphicons-halflingsregular') format('svg');}.glyphicon{position:relative;top:1px;display:inline-block;font-family:'Glyphicons Halflings';font-style:normal;font-weight:normal;line-height:1;-webkit-font-smoothing:antialiased;}
+.glyphicon-asterisk:before{content:"\2a";}
+.glyphicon-plus:before{content:"\2b";}
+.glyphicon-euro:before{content:"\20ac";}
+.glyphicon-minus:before{content:"\2212";}
+.glyphicon-cloud:before{content:"\2601";}
+.glyphicon-envelope:before{content:"\2709";}
+.glyphicon-pencil:before{content:"\270f";}
+.glyphicon-glass:before{content:"\e001";}
+.glyphicon-music:before{content:"\e002";}
+.glyphicon-search:before{content:"\e003";}
+.glyphicon-heart:before{content:"\e005";}
+.glyphicon-star:before{content:"\e006";}
+.glyphicon-star-empty:before{content:"\e007";}
+.glyphicon-user:before{content:"\e008";}
+.glyphicon-film:before{content:"\e009";}
+.glyphicon-th-large:before{content:"\e010";}
+.glyphicon-th:before{content:"\e011";}
+.glyphicon-th-list:before{content:"\e012";}
+.glyphicon-ok:before{content:"\e013";}
+.glyphicon-remove:before{content:"\e014";}
+.glyphicon-zoom-in:before{content:"\e015";}
+.glyphicon-zoom-out:before{content:"\e016";}
+.glyphicon-off:before{content:"\e017";}
+.glyphicon-signal:before{content:"\e018";}
+.glyphicon-cog:before{content:"\e019";}
+.glyphicon-trash:before{content:"\e020";}
+.glyphicon-home:before{content:"\e021";}
+.glyphicon-file:before{content:"\e022";}
+.glyphicon-time:before{content:"\e023";}
+.glyphicon-road:before{content:"\e024";}
+.glyphicon-download-alt:before{content:"\e025";}
+.glyphicon-download:before{content:"\e026";}
+.glyphicon-upload:before{content:"\e027";}
+.glyphicon-inbox:before{content:"\e028";}
+.glyphicon-play-circle:before{content:"\e029";}
+.glyphicon-repeat:before{content:"\e030";}
+.glyphicon-refresh:before{content:"\e031";}
+.glyphicon-list-alt:before{content:"\e032";}
+.glyphicon-flag:before{content:"\e034";}
+.glyphicon-headphones:before{content:"\e035";}
+.glyphicon-volume-off:before{content:"\e036";}
+.glyphicon-volume-down:before{content:"\e037";}
+.glyphicon-volume-up:before{content:"\e038";}
+.glyphicon-qrcode:before{content:"\e039";}
+.glyphicon-barcode:before{content:"\e040";}
+.glyphicon-tag:before{content:"\e041";}
+.glyphicon-tags:before{content:"\e042";}
+.glyphicon-book:before{content:"\e043";}
+.glyphicon-print:before{content:"\e045";}
+.glyphicon-font:before{content:"\e047";}
+.glyphicon-bold:before{content:"\e048";}
+.glyphicon-italic:before{content:"\e049";}
+.glyphicon-text-height:before{content:"\e050";}
+.glyphicon-text-width:before{content:"\e051";}
+.glyphicon-align-left:before{content:"\e052";}
+.glyphicon-align-center:before{content:"\e053";}
+.glyphicon-align-right:before{content:"\e054";}
+.glyphicon-align-justify:before{content:"\e055";}
+.glyphicon-list:before{content:"\e056";}
+.glyphicon-indent-left:before{content:"\e057";}
+.glyphicon-indent-right:before{content:"\e058";}
+.glyphicon-facetime-video:before{content:"\e059";}
+.glyphicon-picture:before{content:"\e060";}
+.glyphicon-map-marker:before{content:"\e062";}
+.glyphicon-adjust:before{content:"\e063";}
+.glyphicon-tint:before{content:"\e064";}
+.glyphicon-edit:before{content:"\e065";}
+.glyphicon-share:before{content:"\e066";}
+.glyphicon-check:before{content:"\e067";}
+.glyphicon-move:before{content:"\e068";}
+.glyphicon-step-backward:before{content:"\e069";}
+.glyphicon-fast-backward:before{content:"\e070";}
+.glyphicon-backward:before{content:"\e071";}
+.glyphicon-play:before{content:"\e072";}
+.glyphicon-pause:before{content:"\e073";}
+.glyphicon-stop:before{content:"\e074";}
+.glyphicon-forward:before{content:"\e075";}
+.glyphicon-fast-forward:before{content:"\e076";}
+.glyphicon-step-forward:before{content:"\e077";}
+.glyphicon-eject:before{content:"\e078";}
+.glyphicon-chevron-left:before{content:"\e079";}
+.glyphicon-chevron-right:before{content:"\e080";}
+.glyphicon-plus-sign:before{content:"\e081";}
+.glyphicon-minus-sign:before{content:"\e082";}
+.glyphicon-remove-sign:before{content:"\e083";}
+.glyphicon-ok-sign:before{content:"\e084";}
+.glyphicon-question-sign:before{content:"\e085";}
+.glyphicon-info-sign:before{content:"\e086";}
+.glyphicon-screenshot:before{content:"\e087";}
+.glyphicon-remove-circle:before{content:"\e088";}
+.glyphicon-ok-circle:before{content:"\e089";}
+.glyphicon-ban-circle:before{content:"\e090";}
+.glyphicon-arrow-left:before{content:"\e091";}
+.glyphicon-arrow-right:before{content:"\e092";}
+.glyphicon-arrow-up:before{content:"\e093";}
+.glyphicon-arrow-down:before{content:"\e094";}
+.glyphicon-share-alt:before{content:"\e095";}
+.glyphicon-resize-full:before{content:"\e096";}
+.glyphicon-resize-small:before{content:"\e097";}
+.glyphicon-exclamation-sign:before{content:"\e101";}
+.glyphicon-gift:before{content:"\e102";}
+.glyphicon-leaf:before{content:"\e103";}
+.glyphicon-eye-open:before{content:"\e105";}
+.glyphicon-eye-close:before{content:"\e106";}
+.glyphicon-warning-sign:before{content:"\e107";}
+.glyphicon-plane:before{content:"\e108";}
+.glyphicon-random:before{content:"\e110";}
+.glyphicon-comment:before{content:"\e111";}
+.glyphicon-magnet:before{content:"\e112";}
+.glyphicon-chevron-up:before{content:"\e113";}
+.glyphicon-chevron-down:before{content:"\e114";}
+.glyphicon-retweet:before{content:"\e115";}
+.glyphicon-shopping-cart:before{content:"\e116";}
+.glyphicon-folder-close:before{content:"\e117";}
+.glyphicon-folder-open:before{content:"\e118";}
+.glyphicon-resize-vertical:before{content:"\e119";}
+.glyphicon-resize-horizontal:before{content:"\e120";}
+.glyphicon-hdd:before{content:"\e121";}
+.glyphicon-bullhorn:before{content:"\e122";}
+.glyphicon-certificate:before{content:"\e124";}
+.glyphicon-thumbs-up:before{content:"\e125";}
+.glyphicon-thumbs-down:before{content:"\e126";}
+.glyphicon-hand-right:before{content:"\e127";}
+.glyphicon-hand-left:before{content:"\e128";}
+.glyphicon-hand-up:before{content:"\e129";}
+.glyphicon-hand-down:before{content:"\e130";}
+.glyphicon-circle-arrow-right:before{content:"\e131";}
+.glyphicon-circle-arrow-left:before{content:"\e132";}
+.glyphicon-circle-arrow-up:before{content:"\e133";}
+.glyphicon-circle-arrow-down:before{content:"\e134";}
+.glyphicon-globe:before{content:"\e135";}
+.glyphicon-tasks:before{content:"\e137";}
+.glyphicon-filter:before{content:"\e138";}
+.glyphicon-fullscreen:before{content:"\e140";}
+.glyphicon-dashboard:before{content:"\e141";}
+.glyphicon-heart-empty:before{content:"\e143";}
+.glyphicon-link:before{content:"\e144";}
+.glyphicon-phone:before{content:"\e145";}
+.glyphicon-usd:before{content:"\e148";}
+.glyphicon-gbp:before{content:"\e149";}
+.glyphicon-sort:before{content:"\e150";}
+.glyphicon-sort-by-alphabet:before{content:"\e151";}
+.glyphicon-sort-by-alphabet-alt:before{content:"\e152";}
+.glyphicon-sort-by-order:before{content:"\e153";}
+.glyphicon-sort-by-order-alt:before{content:"\e154";}
+.glyphicon-sort-by-attributes:before{content:"\e155";}
+.glyphicon-sort-by-attributes-alt:before{content:"\e156";}
+.glyphicon-unchecked:before{content:"\e157";}
+.glyphicon-expand:before{content:"\e158";}
+.glyphicon-collapse-down:before{content:"\e159";}
+.glyphicon-collapse-up:before{content:"\e160";}
+.glyphicon-log-in:before{content:"\e161";}
+.glyphicon-flash:before{content:"\e162";}
+.glyphicon-log-out:before{content:"\e163";}
+.glyphicon-new-window:before{content:"\e164";}
+.glyphicon-record:before{content:"\e165";}
+.glyphicon-save:before{content:"\e166";}
+.glyphicon-open:before{content:"\e167";}
+.glyphicon-saved:before{content:"\e168";}
+.glyphicon-import:before{content:"\e169";}
+.glyphicon-export:before{content:"\e170";}
+.glyphicon-send:before{content:"\e171";}
+.glyphicon-floppy-disk:before{content:"\e172";}
+.glyphicon-floppy-saved:before{content:"\e173";}
+.glyphicon-floppy-remove:before{content:"\e174";}
+.glyphicon-floppy-save:before{content:"\e175";}
+.glyphicon-floppy-open:before{content:"\e176";}
+.glyphicon-credit-card:before{content:"\e177";}
+.glyphicon-transfer:before{content:"\e178";}
+.glyphicon-cutlery:before{content:"\e179";}
+.glyphicon-header:before{content:"\e180";}
+.glyphicon-compressed:before{content:"\e181";}
+.glyphicon-earphone:before{content:"\e182";}
+.glyphicon-phone-alt:before{content:"\e183";}
+.glyphicon-tower:before{content:"\e184";}
+.glyphicon-stats:before{content:"\e185";}
+.glyphicon-sd-video:before{content:"\e186";}
+.glyphicon-hd-video:before{content:"\e187";}
+.glyphicon-subtitles:before{content:"\e188";}
+.glyphicon-sound-stereo:before{content:"\e189";}
+.glyphicon-sound-dolby:before{content:"\e190";}
+.glyphicon-sound-5-1:before{content:"\e191";}
+.glyphicon-sound-6-1:before{content:"\e192";}
+.glyphicon-sound-7-1:before{content:"\e193";}
+.glyphicon-copyright-mark:before{content:"\e194";}
+.glyphicon-registration-mark:before{content:"\e195";}
+.glyphicon-cloud-download:before{content:"\e197";}
+.glyphicon-cloud-upload:before{content:"\e198";}
+.glyphicon-tree-conifer:before{content:"\e199";}
+.glyphicon-tree-deciduous:before{content:"\e200";}
+.glyphicon-briefcase:before{content:"\1f4bc";}
+.glyphicon-calendar:before{content:"\1f4c5";}
+.glyphicon-pushpin:before{content:"\1f4cc";}
+.glyphicon-paperclip:before{content:"\1f4ce";}
+.glyphicon-camera:before{content:"\1f4f7";}
+.glyphicon-lock:before{content:"\1f512";}
+.glyphicon-bell:before{content:"\1f514";}
+.glyphicon-bookmark:before{content:"\1f516";}
+.glyphicon-fire:before{content:"\1f525";}
+.glyphicon-wrench:before{content:"\1f527";}
+</style>
+
+            <script>
+                L_NO_TOUCH = false;
+                L_DISABLE_3D = false;
+            </script>
+
+        
+    <script src="https://cdn.jsdelivr.net/npm/leaflet.fullscreen@3.0.0/Control.FullScreen.min.js"></script>
+    <link rel="stylesheet" href="https://cdn.jsdelivr.net/npm/leaflet.fullscreen@3.0.0/Control.FullScreen.css"/>
+    <script src="https://cdnjs.cloudflare.com/ajax/libs/leaflet.draw/1.0.2/leaflet.draw.js"></script>
+    <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/leaflet.draw/1.0.2/leaflet.draw.css"/>
+    <script src="https://cdn.jsdelivr.net/gh/ljagis/leaflet-measure@2.1.7/dist/leaflet-measure.min.js"></script>
+    <link rel="stylesheet" href="https://cdn.jsdelivr.net/gh/ljagis/leaflet-measure@2.1.7/dist/leaflet-measure.min.css"/>
+    
+            
+        
+    
+            
+        
+    
+            
+        
+    
+            
+        
+    
+            
+        
+    
+            
+        
+    
+            
+        
+    
+            
+        
+    
+            
+        
+    
+            
+        
+    
+            
+        
+</head>
+<body>
+    
+    
+            <div class="folium-map" id="map_6d87c3776bcbf16777ac2de51dfae7f4" ></div>
+        
+    
+            
+        
+</body>
+<script>
+    
+    
+            var map_6d87c3776bcbf16777ac2de51dfae7f4 = L.map(
+                "map_6d87c3776bcbf16777ac2de51dfae7f4",
+                {
+                    center: [24.0277, -104.6532],
+                    crs: L.CRS.EPSG3857,
+                    ...{
+  "zoom": 13,
+  "zoomControl": true,
+  "preferCanvas": false,
+  "drawControl": true,
+  "measureControl": true,
+  "drawExport": false,
+  "layersControl": true,
+}
+
+                }
+            );
+            L.control.scale().addTo(map_6d87c3776bcbf16777ac2de51dfae7f4);
+
+            
+
+        
+    
+            var tile_layer_b74213338a0ac9e47dffc9a72a541606 = L.tileLayer(
+                "https://server.arcgisonline.com/ArcGIS/rest/services/World_Topo_Map/MapServer/tile/{z}/{y}/{x}",
+                {
+  "minZoom": 0,
+  "maxZoom": 24,
+  "maxNativeZoom": 24,
+  "noWrap": false,
+  "attribution": "Tiles \u0026copy; Esri \u0026mdash; Esri, DeLorme, NAVTEQ, TomTom, Intermap, iPC, USGS, FAO, NPS, NRCAN, GeoBase, Kadaster NL, Ordnance Survey, Esri Japan, METI, Esri China (Hong Kong), and the GIS User Community",
+  "subdomains": "abc",
+  "detectRetina": false,
+  "tms": false,
+  "opacity": 1,
+}
+
+            );
+        
+    
+            tile_layer_b74213338a0ac9e47dffc9a72a541606.addTo(map_6d87c3776bcbf16777ac2de51dfae7f4);
+        
+    
+            L.control.fullscreen(
+                {
+  "position": "topleft",
+  "title": "Full Screen",
+  "titleCancel": "Exit Full Screen",
+  "forceSeparateButton": false,
+}
+            ).addTo(map_6d87c3776bcbf16777ac2de51dfae7f4);
+        
+    
+            var options = {
+              position: "topleft",
+              draw: {},
+              edit: {},
+            }
+                // FeatureGroup is to store editable layers.
+                var drawnItems_draw_control_a9c290cf50e744e9b74f28b6e3918fa6 =
+                    new L.featureGroup().addTo(
+                        map_6d87c3776bcbf16777ac2de51dfae7f4
+                    );
+
+            options.edit.featureGroup = drawnItems_draw_control_a9c290cf50e744e9b74f28b6e3918fa6;
+            var draw_control_a9c290cf50e744e9b74f28b6e3918fa6 = new L.Control.Draw(
+                options
+            ).addTo( map_6d87c3776bcbf16777ac2de51dfae7f4 );
+            map_6d87c3776bcbf16777ac2de51dfae7f4.on(L.Draw.Event.CREATED, function(e) {
+                var layer = e.layer,
+                    type = e.layerType;
+                var coords = JSON.stringify(layer.toGeoJSON());
+                layer.on('click', function() {
+                    alert(coords);
+                    console.log(coords);
+                });
+                drawnItems_draw_control_a9c290cf50e744e9b74f28b6e3918fa6.addLayer(layer);
+            });
+            map_6d87c3776bcbf16777ac2de51dfae7f4.on('draw:created', function(e) {
+                drawnItems_draw_control_a9c290cf50e744e9b74f28b6e3918fa6.addLayer(e.layer);
+            });
+
+            
+        
+    
+            var measure_control_ce0c1c991f50487d523e2fd7b037dadf = new L.Control.Measure(
+                {
+  "position": "bottomleft",
+  "primaryLengthUnit": "meters",
+  "secondaryLengthUnit": "miles",
+  "primaryAreaUnit": "sqmeters",
+  "secondaryAreaUnit": "acres",
+});
+            map_6d87c3776bcbf16777ac2de51dfae7f4.addControl(measure_control_ce0c1c991f50487d523e2fd7b037dadf);
+
+            // Workaround for using this plugin with Leaflet>=1.8.0
+            // https://github.com/ljagis/leaflet-measure/issues/171
+            L.Control.Measure.include({
+                _setCaptureMarkerIcon: function () {
+                    // disable autopan
+                    this._captureMarker.options.autoPanOnFocus = false;
+                    // default function
+                    this._captureMarker.setIcon(
+                        L.divIcon({
+                            iconSize: this._map.getSize().multiplyBy(2)
+                        })
+                    );
+                },
+            });
+
+        
+    
+            map_6d87c3776bcbf16777ac2de51dfae7f4.fitBounds(
+                [[24.0277, -104.6532], [24.0277, -104.6532]],
+                {"maxZoom": 13}
+            );
+        
+    
+            var tile_layer_d83522fce05f048486342deab8811bfb = L.tileLayer(
+                "https://server.arcgisonline.com/ArcGIS/rest/services/World_Imagery/MapServer/tile/{z}/{y}/{x}",
+                {
+  "minZoom": 0,
+  "maxZoom": 24,
+  "maxNativeZoom": 24,
+  "noWrap": false,
+  "attribution": "Esri",
+  "subdomains": "abc",
+  "detectRetina": false,
+  "tms": false,
+  "opacity": 1,
+}
+
+            );
+        
+    
+            tile_layer_d83522fce05f048486342deab8811bfb.addTo(map_6d87c3776bcbf16777ac2de51dfae7f4);
+        
+    
+            var tile_layer_011d442e004ed26fb05d1ae1fcf2feeb = L.tileLayer(
+                "https://server.arcgisonline.com/ArcGIS/rest/services/World_Street_Map/MapServer/tile/{z}/{y}/{x}",
+                {
+  "minZoom": 0,
+  "maxZoom": 24,
+  "maxNativeZoom": 24,
+  "noWrap": false,
+  "attribution": "Esri",
+  "subdomains": "abc",
+  "detectRetina": false,
+  "tms": false,
+  "opacity": 1,
+}
+
+            );
+        
+    
+            tile_layer_011d442e004ed26fb05d1ae1fcf2feeb.addTo(map_6d87c3776bcbf16777ac2de51dfae7f4);
+        
+    
+            var marker_f0dbcb726f1a00979486ecdddd8c5bba = L.marker(
+                [24.0277, -104.6532],
+                {
+}
+            ).addTo(map_6d87c3776bcbf16777ac2de51dfae7f4);
+        
+    
+            var icon_d463476cfaa8bd8300e10d00de8c96c1 = L.AwesomeMarkers.icon(
+                {
+  "markerColor": "blue",
+  "iconColor": "white",
+  "icon": "user",
+  "prefix": "fa",
+  "extraClasses": "fa-rotate-0",
+}
+            );
+        
+    
+        var popup_8df1783e0981bccba928a0d1532ec1ca = L.popup({
+  "maxWidth": "100%",
+});
+
+        
+            
+                var html_a9eb1ddbcd0bab61f20ea9a73125e486 = $(`<div id="html_a9eb1ddbcd0bab61f20ea9a73125e486" style="width: 100.0%; height: 100.0%;"><b>Tu Ubicación Actual (GPS)</b><br>Lat: 24.027700<br>Lon: -104.653200</div>`)[0];
+                popup_8df1783e0981bccba928a0d1532ec1ca.setContent(html_a9eb1ddbcd0bab61f20ea9a73125e486);
+            
+        
+
+        marker_f0dbcb726f1a00979486ecdddd8c5bba.bindPopup(popup_8df1783e0981bccba928a0d1532ec1ca)
+        ;
+
+        
+    
+    
+            marker_f0dbcb726f1a00979486ecdddd8c5bba.bindTooltip(
+                `<div>
+                     Tu Ubicación Actual
+                 </div>`,
+                {
+  "sticky": true,
+}
+            );
+        
+    
+                {
+                    const element = marker_f0dbcb726f1a00979486ecdddd8c5bba.getElement();
+                    if (element) {
+                        element.style.width = "";
+                        element.style.height = "";
+                        element.style.marginLeft = "";
+                        element.style.marginTop = "";
+                    }
+                }
+                marker_f0dbcb726f1a00979486ecdddd8c5bba.setIcon(icon_d463476cfaa8bd8300e10d00de8c96c1);
+            
+    
+            var circle_528e75e2acd05c2a00418073587442d5 = L.circle(
+                [24.0277, -104.6532],
+                {"bubblingMouseEvents": true, "color": "#3880ff", "dashArray": null, "dashOffset": null, "fill": true, "fillColor": "#3880ff", "fillOpacity": 0.25, "fillRule": "evenodd", "lineCap": "round", "lineJoin": "round", "opacity": 1.0, "radius": 120, "stroke": true, "weight": 3}
+            ).addTo(map_6d87c3776bcbf16777ac2de51dfae7f4);
+        
+    
+            var marker_32289ee618f6345f6fa1554da896aad0 = L.marker(
+                [24.0277, -104.6532],
+                {
+}
+            ).addTo(map_6d87c3776bcbf16777ac2de51dfae7f4);
+        
+    
+            var icon_1aeccadb1620dd1120218d424232d73e = L.AwesomeMarkers.icon(
+                {
+  "markerColor": "blue",
+  "iconColor": "white",
+  "icon": "info-sign",
+  "prefix": "glyphicon",
+  "extraClasses": "fa-rotate-0",
+}
+            );
+        
+    
+        var popup_d1a0c01e94da441820968b00649b0bf4 = L.popup({
+  "maxWidth": "100%",
+});
+
+        
+            
+                var html_c22ffe0ba154b49fcfc9b36ebbc7feee = $(`<div id="html_c22ffe0ba154b49fcfc9b36ebbc7feee" style="width: 100.0%; height: 100.0%;"><b>Estadio Francisco Sarabia</b><br>Equipo: Polideportivo<br>Liga: POLI<br>Distancia: <b>0.0 km</b></div>`)[0];
+                popup_d1a0c01e94da441820968b00649b0bf4.setContent(html_c22ffe0ba154b49fcfc9b36ebbc7feee);
+            
+        
+
+        marker_32289ee618f6345f6fa1554da896aad0.bindPopup(popup_d1a0c01e94da441820968b00649b0bf4)
+        ;
+
+        
+    
+    
+            marker_32289ee618f6345f6fa1554da896aad0.bindTooltip(
+                `<div>
+                     Estadio Francisco Sarabia (0.0 km)
+                 </div>`,
+                {
+  "sticky": true,
+}
+            );
+        
+    
+                {
+                    const element = marker_32289ee618f6345f6fa1554da896aad0.getElement();
+                    if (element) {
+                        element.style.width = "";
+                        element.style.height = "";
+                        element.style.marginLeft = "";
+                        element.style.marginTop = "";
+                    }
+                }
+                marker_32289ee618f6345f6fa1554da896aad0.setIcon(icon_1aeccadb1620dd1120218d424232d73e);
+            
+    
+            var marker_aec1f1c4e757b2e078a7fa5e93762d46 = L.marker(
+                [24.0321, -104.6409],
+                {
+}
+            ).addTo(map_6d87c3776bcbf16777ac2de51dfae7f4);
+        
+    
+            var icon_ed606a3bc7dad56c9ce7919c2acf7676 = L.AwesomeMarkers.icon(
+                {
+  "markerColor": "orange",
+  "iconColor": "white",
+  "icon": "info-sign",
+  "prefix": "glyphicon",
+  "extraClasses": "fa-rotate-0",
+}
+            );
+        
+    
+        var popup_d0c522bbf43ed9b4a36debdfca10cfe5 = L.popup({
+  "maxWidth": "100%",
+});
+
+        
+            
+                var html_e694309963ab40f4a9fabbb404313dda = $(`<div id="html_e694309963ab40f4a9fabbb404313dda" style="width: 100.0%; height: 100.0%;"><b>Estadio Francisco Villa</b><br>Equipo: Caliente de Durango (LMB)<br>Liga: MLB<br>Distancia: <b>1.34 km</b></div>`)[0];
+                popup_d0c522bbf43ed9b4a36debdfca10cfe5.setContent(html_e694309963ab40f4a9fabbb404313dda);
+            
+        
+
+        marker_aec1f1c4e757b2e078a7fa5e93762d46.bindPopup(popup_d0c522bbf43ed9b4a36debdfca10cfe5)
+        ;
+
+        
+    
+    
+            marker_aec1f1c4e757b2e078a7fa5e93762d46.bindTooltip(
+                `<div>
+                     Estadio Francisco Villa (1.34 km)
+                 </div>`,
+                {
+  "sticky": true,
+}
+            );
+        
+    
+                {
+                    const element = marker_aec1f1c4e757b2e078a7fa5e93762d46.getElement();
+                    if (element) {
+                        element.style.width = "";
+                        element.style.height = "";
+                        element.style.marginLeft = "";
+                        element.style.marginTop = "";
+                    }
+                }
+                marker_aec1f1c4e757b2e078a7fa5e93762d46.setIcon(icon_ed606a3bc7dad56c9ce7919c2acf7676);
+            
+    
+            var marker_91182d8f6bec94e4c65f6c4b98784dca = L.marker(
+                [25.6267, -103.4144],
+                {
+}
+            ).addTo(map_6d87c3776bcbf16777ac2de51dfae7f4);
+        
+    
+            var icon_96c452527532a036f2095b41034b9588 = L.AwesomeMarkers.icon(
+                {
+  "markerColor": "green",
+  "iconColor": "white",
+  "icon": "info-sign",
+  "prefix": "glyphicon",
+  "extraClasses": "fa-rotate-0",
+}
+            );
+        
+    
+        var popup_f0ee63da85958a6d5e231fd1d963a15b = L.popup({
+  "maxWidth": "100%",
+});
+
+        
+            
+                var html_db417d46f5c61765db00f93daae508e8 = $(`<div id="html_db417d46f5c61765db00f93daae508e8" style="width: 100.0%; height: 100.0%;"><b>Estadio Corona (TSM)</b><br>Equipo: Santos Laguna<br>Liga: LIGA_MX<br>Distancia: <b>217.35 km</b></div>`)[0];
+                popup_f0ee63da85958a6d5e231fd1d963a15b.setContent(html_db417d46f5c61765db00f93daae508e8);
+            
+        
+
+        marker_91182d8f6bec94e4c65f6c4b98784dca.bindPopup(popup_f0ee63da85958a6d5e231fd1d963a15b)
+        ;
+
+        
+    
+    
+            marker_91182d8f6bec94e4c65f6c4b98784dca.bindTooltip(
+                `<div>
+                     Estadio Corona (TSM) (217.35 km)
+                 </div>`,
+                {
+  "sticky": true,
+}
+            );
+        
+    
+                {
+                    const element = marker_91182d8f6bec94e4c65f6c4b98784dca.getElement();
+                    if (element) {
+                        element.style.width = "";
+                        element.style.height = "";
+                        element.style.marginLeft = "";
+                        element.style.marginTop = "";
+                    }
+                }
+                marker_91182d8f6bec94e4c65f6c4b98784dca.setIcon(icon_96c452527532a036f2095b41034b9588);
+            
+    
+            var marker_e6a382a2047f59f254be92990364498a = L.marker(
+                [25.5398, -103.4357],
+                {
+}
+            ).addTo(map_6d87c3776bcbf16777ac2de51dfae7f4);
+        
+    
+            var icon_c8631a1f031de5f7340ed083589a409d = L.AwesomeMarkers.icon(
+                {
+  "markerColor": "orange",
+  "iconColor": "white",
+  "icon": "info-sign",
+  "prefix": "glyphicon",
+  "extraClasses": "fa-rotate-0",
+}
+            );
+        
+    
+        var popup_56ea5900dc60a1070a58afda8ad93ff4 = L.popup({
+  "maxWidth": "100%",
+});
+
+        
+            
+                var html_ac6a0c6ae0256e1d57188224968f2f81 = $(`<div id="html_ac6a0c6ae0256e1d57188224968f2f81" style="width: 100.0%; height: 100.0%;"><b>Estadio de la Revolución</b><br>Equipo: Algodoneros (LMB)<br>Liga: MLB<br>Distancia: <b>208.27 km</b></div>`)[0];
+                popup_56ea5900dc60a1070a58afda8ad93ff4.setContent(html_ac6a0c6ae0256e1d57188224968f2f81);
+            
+        
+
+        marker_e6a382a2047f59f254be92990364498a.bindPopup(popup_56ea5900dc60a1070a58afda8ad93ff4)
+        ;
+
+        
+    
+    
+            marker_e6a382a2047f59f254be92990364498a.bindTooltip(
+                `<div>
+                     Estadio de la Revolución (208.27 km)
+                 </div>`,
+                {
+  "sticky": true,
+}
+            );
+        
+    
+                {
+                    const element = marker_e6a382a2047f59f254be92990364498a.getElement();
+                    if (element) {
+                        element.style.width = "";
+                        element.style.height = "";
+                        element.style.marginLeft = "";
+                        element.style.marginTop = "";
+                    }
+                }
+                marker_e6a382a2047f59f254be92990364498a.setIcon(icon_c8631a1f031de5f7340ed083589a409d);
+            
+    
+            var marker_d36515683360ba997e7ff4a13207fd4d = L.marker(
+                [19.3029, -99.1505],
+                {
+}
+            ).addTo(map_6d87c3776bcbf16777ac2de51dfae7f4);
+        
+    
+            var icon_175d81828dd0c90edfffef98ebc1cace = L.AwesomeMarkers.icon(
+                {
+  "markerColor": "green",
+  "iconColor": "white",
+  "icon": "info-sign",
+  "prefix": "glyphicon",
+  "extraClasses": "fa-rotate-0",
+}
+            );
+        
+    
+        var popup_7cf4c031a7e821eef5ed863f70a8cb33 = L.popup({
+  "maxWidth": "100%",
+});
+
+        
+            
+                var html_882be3a736a4bf8b3f678dbf6355b6d2 = $(`<div id="html_882be3a736a4bf8b3f678dbf6355b6d2" style="width: 100.0%; height: 100.0%;"><b>Estadio Azteca</b><br>Equipo: Club América / NFL Mexico<br>Liga: LIGA_MX<br>Distancia: <b>774.0 km</b></div>`)[0];
+                popup_7cf4c031a7e821eef5ed863f70a8cb33.setContent(html_882be3a736a4bf8b3f678dbf6355b6d2);
+            
+        
+
+        marker_d36515683360ba997e7ff4a13207fd4d.bindPopup(popup_7cf4c031a7e821eef5ed863f70a8cb33)
+        ;
+
+        
+    
+    
+            marker_d36515683360ba997e7ff4a13207fd4d.bindTooltip(
+                `<div>
+                     Estadio Azteca (774.0 km)
+                 </div>`,
+                {
+  "sticky": true,
+}
+            );
+        
+    
+                {
+                    const element = marker_d36515683360ba997e7ff4a13207fd4d.getElement();
+                    if (element) {
+                        element.style.width = "";
+                        element.style.height = "";
+                        element.style.marginLeft = "";
+                        element.style.marginTop = "";
+                    }
+                }
+                marker_d36515683360ba997e7ff4a13207fd4d.setIcon(icon_175d81828dd0c90edfffef98ebc1cace);
+            
+    
+            var marker_5279892b42de84cf6e95ce37bbd15f5b = L.marker(
+                [19.4038, -99.0911],
+                {
+}
+            ).addTo(map_6d87c3776bcbf16777ac2de51dfae7f4);
+        
+    
+            var icon_f3cee7891c19a93e2920facb47e14717 = L.AwesomeMarkers.icon(
+                {
+  "markerColor": "orange",
+  "iconColor": "white",
+  "icon": "info-sign",
+  "prefix": "glyphicon",
+  "extraClasses": "fa-rotate-0",
+}
+            );
+        
+    
+        var popup_16f59a1195d270c220710f43cc94ae1b = L.popup({
+  "maxWidth": "100%",
+});
+
+        
+            
+                var html_dabd4bdf5acd8255a77e29b2bcc27929 = $(`<div id="html_dabd4bdf5acd8255a77e29b2bcc27929" style="width: 100.0%; height: 100.0%;"><b>Estadio Alfredo Harp Helú</b><br>Equipo: Diablos Rojos (LMB/MLB)<br>Liga: MLB<br>Distancia: <b>770.84 km</b></div>`)[0];
+                popup_16f59a1195d270c220710f43cc94ae1b.setContent(html_dabd4bdf5acd8255a77e29b2bcc27929);
+            
+        
+
+        marker_5279892b42de84cf6e95ce37bbd15f5b.bindPopup(popup_16f59a1195d270c220710f43cc94ae1b)
+        ;
+
+        
+    
+    
+            marker_5279892b42de84cf6e95ce37bbd15f5b.bindTooltip(
+                `<div>
+                     Estadio Alfredo Harp Helú (770.84 km)
+                 </div>`,
+                {
+  "sticky": true,
+}
+            );
+        
+    
+                {
+                    const element = marker_5279892b42de84cf6e95ce37bbd15f5b.getElement();
+                    if (element) {
+                        element.style.width = "";
+                        element.style.height = "";
+                        element.style.marginLeft = "";
+                        element.style.marginTop = "";
+                    }
+                }
+                marker_5279892b42de84cf6e95ce37bbd15f5b.setIcon(icon_f3cee7891c19a93e2920facb47e14717);
+            
+    
+            var marker_56bbfa58471fdf2b716cda3c8b04129b = L.marker(
+                [25.6698, -100.2447],
+                {
+}
+            ).addTo(map_6d87c3776bcbf16777ac2de51dfae7f4);
+        
+    
+            var icon_18e855b8cabc89e57972ca85a4c1df87 = L.AwesomeMarkers.icon(
+                {
+  "markerColor": "green",
+  "iconColor": "white",
+  "icon": "info-sign",
+  "prefix": "glyphicon",
+  "extraClasses": "fa-rotate-0",
+}
+            );
+        
+    
+        var popup_25330aaba67b1a514fd337720621ec6c = L.popup({
+  "maxWidth": "100%",
+});
+
+        
+            
+                var html_07e233c14af1ebfb3e6cba6a9848e353 = $(`<div id="html_07e233c14af1ebfb3e6cba6a9848e353" style="width: 100.0%; height: 100.0%;"><b>Estadio BBVA</b><br>Equipo: Rayados<br>Liga: LIGA_MX<br>Distancia: <b>480.8 km</b></div>`)[0];
+                popup_25330aaba67b1a514fd337720621ec6c.setContent(html_07e233c14af1ebfb3e6cba6a9848e353);
+            
+        
+
+        marker_56bbfa58471fdf2b716cda3c8b04129b.bindPopup(popup_25330aaba67b1a514fd337720621ec6c)
+        ;
+
+        
+    
+    
+            marker_56bbfa58471fdf2b716cda3c8b04129b.bindTooltip(
+                `<div>
+                     Estadio BBVA (480.8 km)
+                 </div>`,
+                {
+  "sticky": true,
+}
+            );
+        
+    
+                {
+                    const element = marker_56bbfa58471fdf2b716cda3c8b04129b.getElement();
+                    if (element) {
+                        element.style.width = "";
+                        element.style.height = "";
+                        element.style.marginLeft = "";
+                        element.style.marginTop = "";
+                    }
+                }
+                marker_56bbfa58471fdf2b716cda3c8b04129b.setIcon(icon_18e855b8cabc89e57972ca85a4c1df87);
+            
+    
+            var marker_417996e0397aa8e27ae877ac7ea65644 = L.marker(
+                [20.6816, -103.4627],
+                {
+}
+            ).addTo(map_6d87c3776bcbf16777ac2de51dfae7f4);
+        
+    
+            var icon_4ff96e410b8e13efdfd4e7c0be914828 = L.AwesomeMarkers.icon(
+                {
+  "markerColor": "green",
+  "iconColor": "white",
+  "icon": "info-sign",
+  "prefix": "glyphicon",
+  "extraClasses": "fa-rotate-0",
+}
+            );
+        
+    
+        var popup_28ecd9af763236f901db800a73e7b59e = L.popup({
+  "maxWidth": "100%",
+});
+
+        
+            
+                var html_c55fad421f6143fc4b71b8cbbcd51c3d = $(`<div id="html_c55fad421f6143fc4b71b8cbbcd51c3d" style="width: 100.0%; height: 100.0%;"><b>Estadio Akron</b><br>Equipo: Chivas<br>Liga: LIGA_MX<br>Distancia: <b>391.69 km</b></div>`)[0];
+                popup_28ecd9af763236f901db800a73e7b59e.setContent(html_c55fad421f6143fc4b71b8cbbcd51c3d);
+            
+        
+
+        marker_417996e0397aa8e27ae877ac7ea65644.bindPopup(popup_28ecd9af763236f901db800a73e7b59e)
+        ;
+
+        
+    
+    
+            marker_417996e0397aa8e27ae877ac7ea65644.bindTooltip(
+                `<div>
+                     Estadio Akron (391.69 km)
+                 </div>`,
+                {
+  "sticky": true,
+}
+            );
+        
+    
+                {
+                    const element = marker_417996e0397aa8e27ae877ac7ea65644.getElement();
+                    if (element) {
+                        element.style.width = "";
+                        element.style.height = "";
+                        element.style.marginLeft = "";
+                        element.style.marginTop = "";
+                    }
+                }
+                marker_417996e0397aa8e27ae877ac7ea65644.setIcon(icon_4ff96e410b8e13efdfd4e7c0be914828);
+            
+    
+            var marker_38154d0999d9aebf064da49a89c7f640 = L.marker(
+                [32.7473, -97.0945],
+                {
+}
+            ).addTo(map_6d87c3776bcbf16777ac2de51dfae7f4);
+        
+    
+            var icon_82594cb13084f72f295310f4110854b8 = L.AwesomeMarkers.icon(
+                {
+  "markerColor": "red",
+  "iconColor": "white",
+  "icon": "info-sign",
+  "prefix": "glyphicon",
+  "extraClasses": "fa-rotate-0",
+}
+            );
+        
+    
+        var popup_1439333d0f21a7cde59313864c4c2922 = L.popup({
+  "maxWidth": "100%",
+});
+
+        
+            
+                var html_bc4ad2a66e94f942a99822be01069153 = $(`<div id="html_bc4ad2a66e94f942a99822be01069153" style="width: 100.0%; height: 100.0%;"><b>AT&T Stadium</b><br>Equipo: Dallas Cowboys (NFL)<br>Liga: NFL<br>Distancia: <b>1218.47 km</b></div>`)[0];
+                popup_1439333d0f21a7cde59313864c4c2922.setContent(html_bc4ad2a66e94f942a99822be01069153);
+            
+        
+
+        marker_38154d0999d9aebf064da49a89c7f640.bindPopup(popup_1439333d0f21a7cde59313864c4c2922)
+        ;
+
+        
+    
+    
+            marker_38154d0999d9aebf064da49a89c7f640.bindTooltip(
+                `<div>
+                     AT&T Stadium (1218.47 km)
+                 </div>`,
+                {
+  "sticky": true,
+}
+            );
+        
+    
+                {
+                    const element = marker_38154d0999d9aebf064da49a89c7f640.getElement();
+                    if (element) {
+                        element.style.width = "";
+                        element.style.height = "";
+                        element.style.marginLeft = "";
+                        element.style.marginTop = "";
+                    }
+                }
+                marker_38154d0999d9aebf064da49a89c7f640.setIcon(icon_82594cb13084f72f295310f4110854b8);
+            
+    
+            var marker_cd2c8ec41289b713cf266771e0725df2 = L.marker(
+                [34.0739, -118.24],
+                {
+}
+            ).addTo(map_6d87c3776bcbf16777ac2de51dfae7f4);
+        
+    
+            var icon_a7bb27123c0b0d3965a3c0597981f1c9 = L.AwesomeMarkers.icon(
+                {
+  "markerColor": "orange",
+  "iconColor": "white",
+  "icon": "info-sign",
+  "prefix": "glyphicon",
+  "extraClasses": "fa-rotate-0",
+}
+            );
+        
+    
+        var popup_04a3f5502c1da0c607478f7e36119a3e = L.popup({
+  "maxWidth": "100%",
+});
+
+        
+            
+                var html_92d4ec36110f07b8b8c845ce1a64939a = $(`<div id="html_92d4ec36110f07b8b8c845ce1a64939a" style="width: 100.0%; height: 100.0%;"><b>Dodger Stadium</b><br>Equipo: LA Dodgers (MLB)<br>Liga: MLB<br>Distancia: <b>1726.73 km</b></div>`)[0];
+                popup_04a3f5502c1da0c607478f7e36119a3e.setContent(html_92d4ec36110f07b8b8c845ce1a64939a);
+            
+        
+
+        marker_cd2c8ec41289b713cf266771e0725df2.bindPopup(popup_04a3f5502c1da0c607478f7e36119a3e)
+        ;
+
+        
+    
+    
+            marker_cd2c8ec41289b713cf266771e0725df2.bindTooltip(
+                `<div>
+                     Dodger Stadium (1726.73 km)
+                 </div>`,
+                {
+  "sticky": true,
+}
+            );
+        
+    
+                {
+                    const element = marker_cd2c8ec41289b713cf266771e0725df2.getElement();
+                    if (element) {
+                        element.style.width = "";
+                        element.style.height = "";
+                        element.style.marginLeft = "";
+                        element.style.marginTop = "";
+                    }
+                }
+                marker_cd2c8ec41289b713cf266771e0725df2.setIcon(icon_a7bb27123c0b0d3965a3c0597981f1c9);
+            
+    
+            var poly_line_3c37eb3360db7daac135cb561e51fbcf = L.polyline(
+                [[24.0277, -104.6532], [24.0277, -104.6532]],
+                {"bubblingMouseEvents": true, "color": "#2dd55b", "dashArray": "8, 8", "dashOffset": null, "fill": false, "fillColor": "#2dd55b", "fillOpacity": 0.2, "fillRule": "evenodd", "lineCap": "round", "lineJoin": "round", "noClip": false, "opacity": 0.85, "smoothFactor": 1.0, "stroke": true, "weight": 4}
+            ).addTo(map_6d87c3776bcbf16777ac2de51dfae7f4);
+        
+    
+            poly_line_3c37eb3360db7daac135cb561e51fbcf.bindTooltip(
+                `<div>
+                     Ruta directa hacia Estadio Francisco Sarabia (0.0 km)
+                 </div>`,
+                {
+  "sticky": true,
+}
+            );
+        
+    
+            var layer_control_bebf36f8d0d87d9a4c68233349bc03e6_layers = {
+                base_layers : {
+                    "esriworldtopomap" : tile_layer_b74213338a0ac9e47dffc9a72a541606,
+                },
+                overlays :  {
+                    "Esri.WorldImagery" : tile_layer_d83522fce05f048486342deab8811bfb,
+                    "Esri.WorldStreetMap" : tile_layer_011d442e004ed26fb05d1ae1fcf2feeb,
+                },
+            };
+            let layer_control_bebf36f8d0d87d9a4c68233349bc03e6 = L.control.layers(
+                layer_control_bebf36f8d0d87d9a4c68233349bc03e6_layers.base_layers,
+                layer_control_bebf36f8d0d87d9a4c68233349bc03e6_layers.overlays,
+                {
+  "position": "topright",
+  "collapsed": true,
+  "autoZIndex": true,
+}
+            ).addTo(map_6d87c3776bcbf16777ac2de51dfae7f4);
+
+        
+</script>
+</html>

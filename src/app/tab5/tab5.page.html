@@ -1,0 +1,158 @@
+<ion-header class="ion-no-border">
+  <ion-toolbar class="radar-toolbar">
+    <div class="radar-brand" slot="start">
+      <div class="radar-icon-box">
+        <ion-icon name="compass"></ion-icon>
+      </div>
+      <div>
+        <ion-title>Radar Deportivo</ion-title>
+        <span class="sub-brand">Ordenamiento por Proximidad Real</span>
+      </div>
+    </div>
+
+    <ion-badge slot="end" [class]="'haversine-badge ' + (geoState.coords ? 'active' : 'waiting')">
+      {{ geoState.coords ? 'Fórmula Haversine ✓' : 'Esperando GPS' }}
+    </ion-badge>
+  </ion-toolbar>
+
+  <!-- FILTRO DE LIGAS (SCROLLABLE PILLS) -->
+  <ion-toolbar class="filter-toolbar">
+    <ion-segment [value]="selectedLeague" (ionChange)="onLeagueChange($event)" scrollable="true" class="custom-segment">
+      <ion-segment-button value="ALL">
+        <ion-label>🌟 Todas</ion-label>
+      </ion-segment-button>
+      <ion-segment-button value="POLI">
+        <ion-label>🏟️ Durango</ion-label>
+      </ion-segment-button>
+      <ion-segment-button value="MLB">
+        <ion-label>⚾ Béisbol</ion-label>
+      </ion-segment-button>
+      <ion-segment-button value="LIGA_MX">
+        <ion-label>⚽ Liga MX</ion-label>
+      </ion-segment-button>
+      <ion-segment-button value="NFL">
+        <ion-label>🏈 NFL</ion-label>
+      </ion-segment-button>
+    </ion-segment>
+  </ion-toolbar>
+</ion-header>
+
+<ion-content [fullscreen]="true" class="radar-content">
+  <div class="radar-container">
+
+    <!-- NO GPS BANNER -->
+    <div *ngIf="!geoState.coords" class="no-gps-banner">
+      <div class="no-gps-visual">
+        <ion-icon name="navigate-circle-outline"></ion-icon>
+      </div>
+      <div class="no-gps-info">
+        <h3>Calculador de Proximidad Inactivo</h3>
+        <p>Para medir la distancia en kilómetros a cada estadio y ordenarlos desde el más cercano al más lejano, activa tu posición.</p>
+        <div class="banner-btns">
+          <ion-button expand="block" (click)="requestLocation()" class="btn-locate">
+            <ion-icon name="locate" slot="start"></ion-icon>
+            Activar GPS Real
+          </ion-button>
+          <ion-button expand="block" fill="outline" (click)="simulatePreset('dgo')" class="btn-demo">
+            <ion-icon name="flask-outline" slot="start"></ion-icon>
+            Simular Ubicación en Durango
+          </ion-button>
+        </div>
+      </div>
+    </div>
+
+    <!-- CLOSEST VENUE HERO CARD (Fórmula Haversine) -->
+    <div *ngIf="closestVenue && geoState.coords" class="closest-hero-card">
+      <div class="hero-top-badge">
+        <ion-icon name="flash"></ion-icon>
+        <span>SEDE MÁS CERCANA A TU POSICIÓN</span>
+      </div>
+
+      <div class="hero-header-row">
+        <div class="hero-icon-emoji">{{ closestVenue.emoji }}</div>
+        <div class="hero-titles">
+          <h2>{{ closestVenue.name }}</h2>
+          <p class="hero-team">{{ closestVenue.team }}</p>
+          <p class="hero-city">📍 {{ closestVenue.city }}, {{ closestVenue.state }}</p>
+        </div>
+      </div>
+
+      <div class="hero-metrics-row">
+        <div class="metric-card">
+          <span class="m-label">DISTANCIA EXACTA</span>
+          <strong class="m-value highlighted">{{ closestVenue.distanceKm }} km</strong>
+          <span class="m-sub">En línea recta</span>
+        </div>
+
+        <div class="metric-card">
+          <span class="m-label">RUMBO CARDINAL</span>
+          <strong class="m-value">{{ closestVenue.bearing }}</strong>
+          <span class="m-sub">Dirección</span>
+        </div>
+
+        <div class="metric-card">
+          <span class="m-label">TIEMPO ESTIMADO</span>
+          <strong class="m-value">{{ estimateDriveTime(closestVenue.distanceKm) }}</strong>
+          <span class="m-sub">En vehículo</span>
+        </div>
+      </div>
+
+      <div class="hero-actions-row">
+        <ion-button expand="block" (click)="viewOnMap(closestVenue)" class="hero-btn-map">
+          <ion-icon name="map" slot="start"></ion-icon>
+          Ver en Mapa Leaflet
+        </ion-button>
+        <ion-button expand="block" (click)="openInExternalMap(closestVenue)" class="hero-btn-nav" fill="outline">
+          <ion-icon name="navigate" slot="start"></ion-icon>
+          Navegar con Google Maps
+        </ion-button>
+      </div>
+    </div>
+
+    <!-- BARRA DE CONTROL DE RESULTADOS Y RADIOS -->
+    <div class="results-header-bar">
+      <div class="count-pill">
+        <span>{{ venues.length }} sedes encontradas</span>
+      </div>
+
+      <div class="radius-filter">
+        <ion-select [value]="selectedRadius" (ionChange)="onRadiusChange($event)" interface="popover" class="custom-select">
+          <ion-select-option [value]="0">Distancia: Sin límite</ion-select-option>
+          <ion-select-option [value]="25">Menos de 25 km</ion-select-option>
+          <ion-select-option [value]="100">Menos de 100 km</ion-select-option>
+          <ion-select-option [value]="300">Menos de 300 km</ion-select-option>
+        </ion-select>
+      </div>
+    </div>
+
+    <!-- LISTA DE SEDES DEPORTIVAS ORDENADAS POR PROXIMIDAD -->
+    <div class="venues-feed">
+      <div *ngFor="let v of venues; let i = index" class="venue-card" (click)="viewOnMap(v)">
+        <div class="card-left">
+          <div class="venue-rank-pill">#{{ i + 1 }}</div>
+          <div class="venue-emoji-box">{{ v.emoji }}</div>
+        </div>
+
+        <div class="card-center">
+          <div class="venue-meta">
+            <span [class]="'league-chip ' + getLeagueBadgeClass(v.league)">{{ v.league }}</span>
+            <span class="venue-cap">Cap. {{ v.capacity | number }}</span>
+          </div>
+          <h4 class="venue-name">{{ v.name }}</h4>
+          <p class="venue-team">{{ v.team }}</p>
+          <p class="venue-sub">{{ v.city }}, {{ v.state }}</p>
+        </div>
+
+        <div class="card-right">
+          <div *ngIf="v.distanceKm !== undefined" class="dist-pill" [class.near]="v.distanceKm < 20">
+            <strong>{{ v.distanceKm }}</strong>
+            <span>km</span>
+          </div>
+          <span *ngIf="v.bearing" class="bearing-text">{{ v.bearing }}</span>
+          <ion-icon name="chevron-forward" class="arrow-icon"></ion-icon>
+        </div>
+      </div>
+    </div>
+
+  </div>
+</ion-content>

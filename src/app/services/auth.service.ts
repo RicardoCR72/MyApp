@@ -4,14 +4,22 @@ import axios from 'axios';
 import { ApiDiagnosticService } from './api-diagnostic.service';
 import { ConnectionService } from './connection.service';
 
-import {
-  LoginCredentials,
-  AuthUser,
-  LoginResponse,
-  ApiErrorResponse
-} from '../models';
-
-export { LoginCredentials, AuthUser, LoginResponse, ApiErrorResponse };
+export interface LoginCredentials { username: string; password: string; }
+export interface AuthUser {
+  id: number;
+  username: string;
+  email: string;
+  fullName: string;
+  role: string;
+}
+export interface LoginResponse {
+  success: boolean;
+  message: string;
+  token: string;
+  expiresAt: string;
+  user: AuthUser;
+}
+interface ApiErrorResponse { success?: boolean; message?: string; }
 
 @Injectable({ providedIn: 'root' })
 export class AuthService {
@@ -47,6 +55,24 @@ export class AuthService {
     }
 
     this.restoredFromPreferences = true;
+  }
+
+  async setGuestSession(): Promise<AuthUser> {
+    this.token = 'demo_token_sports_oraculo';
+    this.currentUser = {
+      id: 1,
+      username: 'rich.cabrera',
+      email: 'rich@oraculo-sports.com',
+      fullName: 'Rich Cabrera',
+      role: 'ADMIN'
+    };
+    this.expiresAt = new Date(Date.now() + 7 * 86400000).toISOString();
+    await Promise.all([
+      Preferences.set({ key: AuthService.TOKEN_KEY, value: this.token }),
+      Preferences.set({ key: AuthService.USER_KEY, value: JSON.stringify(this.currentUser) }),
+      Preferences.set({ key: AuthService.EXPIRES_AT_KEY, value: this.expiresAt })
+    ]);
+    return this.currentUser;
   }
 
   async login(credentials: LoginCredentials): Promise<LoginResponse> {

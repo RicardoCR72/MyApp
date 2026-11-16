@@ -50,6 +50,11 @@ export class LoginPage {
     }
   }
 
+  async loginAsGuest(): Promise<void> {
+    await this.authService.setGuestSession();
+    await this.router.navigateByUrl('/tabs/tab1', { replaceUrl: true });
+  }
+
   async login(): Promise<void> {
     if (this.isAnimating) return;
 

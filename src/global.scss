@@ -1,14 +1,3 @@
-/*
- * App Global CSS
- * ----------------------------------------------------------------------------
- * Put style rules here that you want to apply globally. These styles are for
- * the entire app and not just one component. Additionally, this file can be
- * used as an entry point to import other CSS/Sass files to be included in the
- * output CSS.
- * For more information on global stylesheets, visit the documentation:
- * https://ionicframework.com/docs/layout/global-stylesheets
- */
-
 /* Core CSS required for Ionic components to work properly */
 @import "@ionic/angular/css/core.css";
 
@@ -25,13 +14,112 @@
 @import "@ionic/angular/css/text-transformation.css";
 @import "@ionic/angular/css/flex-utils.css";
 
-/**
- * Ionic Dark Mode
- * -----------------------------------------------------
- * For more info, please see:
- * https://ionicframework.com/docs/theming/dark-mode
- */
+@import "@ionic/angular/css/palettes/dark.always.css";
 
-/* @import "@ionic/angular/css/palettes/dark.always.css"; */
-/* @import "@ionic/angular/css/palettes/dark.class.css"; */
-@import "@ionic/angular/css/palettes/dark.system.css";
+/* Estilos de Leaflet y marcadores modernos */
+.leaflet-container {
+  width: 100%;
+  height: 100%;
+  font-family: inherit;
+  z-index: 1;
+}
+
+/* Pulsing user location marker */
+.user-marker-pin {
+  width: 22px;
+  height: 22px;
+  border-radius: 50%;
+  background: #3880ff;
+  border: 3px solid #ffffff;
+  box-shadow: 0 0 10px rgba(56, 128, 255, 0.8);
+  position: relative;
+}
+
+.user-marker-pulse {
+  position: absolute;
+  top: -8px;
+  left: -8px;
+  width: 32px;
+  height: 32px;
+  border-radius: 50%;
+  background: rgba(56, 128, 255, 0.4);
+  animation: pulse-ring 2s infinite;
+}
+
+@keyframes pulse-ring {
+  0% {
+    transform: scale(0.6);
+    opacity: 0.9;
+  }
+  100% {
+    transform: scale(1.8);
+    opacity: 0;
+  }
+}
+
+/* Venue Custom Markers */
+.venue-marker {
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  width: 36px;
+  height: 36px;
+  border-radius: 50%;
+  background: #1e293b;
+  border: 2px solid #2dd55b;
+  box-shadow: 0 4px 10px rgba(0,0,0,0.4);
+  font-size: 18px;
+}
+
+.venue-marker.mlb {
+  border-color: #ffc409;
+}
+
+.venue-marker.nfl {
+  border-color: #eb445a;
+}
+
+.venue-marker.soccer {
+  border-color: #2dd55b;
+}
+
+/* Custom Popup styling */
+.leaflet-popup-content-wrapper {
+  background: #1e2235;
+  color: #ffffff;
+  border-radius: 14px;
+  box-shadow: 0 8px 24px rgba(0, 0, 0, 0.5);
+  border: 1px solid rgba(255, 255, 255, 0.1);
+}
+
+.leaflet-popup-tip {
+  background: #1e2235;
+}
+
+.custom-popup {
+  padding: 4px;
+}
+
+.custom-popup h3 {
+  margin: 0 0 4px 0;
+  font-size: 15px;
+  font-weight: 700;
+  color: #ffffff;
+}
+
+.custom-popup p {
+  margin: 2px 0;
+  font-size: 12px;
+  color: #94a3b8;
+}
+
+.custom-popup .dist-tag {
+  display: inline-block;
+  padding: 2px 8px;
+  background: rgba(45, 213, 91, 0.2);
+  color: #2dd55b;
+  border-radius: 6px;
+  font-size: 11px;
+  font-weight: 600;
+  margin-top: 6px;
+}

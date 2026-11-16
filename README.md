@@ -190,3 +190,21 @@ git push -u origin main
 ```
 
 No deben publicarse contraseñas reales, tokens, archivos `.env` ni respaldos con datos sensibles.
+
+
+---
+
+## 🗺️ Módulo de Geolocalización Satelital & Leafmap (Entrega Noviembre 2026)
+
+Integración completa del módulo de geolocalización satelital y análisis geoespacial:
+
+| Criterio | Estado | Implementación |
+|---|:---:|---|
+| **Geolocalización Real** | ✅ **Cumplido** | API W3C Geolocation en [`src/app/services/geo.service.ts`](src/app/services/geo.service.ts) con `enableHighAccuracy: true`. |
+| **Solicitud de Permisos** | ✅ **Cumplido** | Permisos `ACCESS_FINE_LOCATION` en AndroidManifest y botón de solicitud reactiva en UI. |
+| **Obtención de Coordenadas** | ✅ **Cumplido** | Latitud, longitud con precisión de 6 decimales, altitud, rumbo y velocidad en vivo. |
+| **Visualización** | ✅ **Cumplido** | HUD digital con grados decimales, sexagesimales DMS y copiado rápido. |
+| **Funcionalidad Basada en Ubicación** | ✅ **Cumplido** | Radar de sedes deportivas con cálculo esférico mediante la **Fórmula de Haversine**, ordenamiento por cercanía, tiempo estimado de viaje y rumbo cardinal en Tab 5. |
+| **Manejo de Errores** | ✅ **Cumplido** | Detección de permisos denegados, sin señal y presets de prueba (Durango, Azteca, AT&T Stadium). |
+| **Integración con Leafmap** | ✅ **Cumplido** | Librería Python `leafmap==0.64.7` con capas satelitales híbridas en [`backend/generate_leafmap.py`](backend/generate_leafmap.py) embebido en Tab 4. |
+| **APK Android Compilado** | ✅ **Cumplido** | Paquete Android ejecutable ubicado en [`apk/app-debug.apk`](apk/app-debug.apk) (5.56 MB). |
