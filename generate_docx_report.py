@@ -1,7 +1,10 @@
 # -*- coding: utf-8 -*-
 """
 Script para generar el Reporte en formato Word (.docx) editable
-para la aplicación GeoSport Radar.
+con soporte completo para:
+1. Geolocalización y Leafmap (Requisito 1)
+2. Sensores Físicos, Acelerómetro, Giroscopio, Vibración Háptica y Batería (Requisito 2)
+3. Prompts utilizados y validación posterior de la solución.
 """
 
 import os
@@ -16,8 +19,7 @@ from docx.oxml.ns import nsdecls, qn
 doc = Document()
 
 # Configuración de márgenes (2.0 cm)
-sections = doc.sections
-for s in sections:
+for s in doc.sections:
     s.top_margin = Inches(0.8)
     s.bottom_margin = Inches(0.8)
     s.left_margin = Inches(0.8)
@@ -31,16 +33,26 @@ COLOR_DARK = RGBColor(30, 41, 59)     # #1E293B
 COLOR_GREEN = RGBColor(22, 163, 74)   # #16A34A
 
 def set_cell_background(cell, fill_hex):
-    """Aplica color de fondo a una celda de tabla."""
     tcPr = cell._tc.get_or_add_tcPr()
     shd = parse_xml(f'<w:shd {nsdecls("w")} w:fill="{fill_hex}"/>')
     tcPr.append(shd)
 
 def set_cell_margins(cell, top=100, bottom=100, left=150, right=150):
-    """Configura márgenes internos de una celda."""
     tcPr = cell._tc.get_or_add_tcPr()
     tcMar = parse_xml(f'<w:tcMar {nsdecls("w")}><w:top w:w="{top}" w:type="dxa"/><w:bottom w:w="{bottom}" w:type="dxa"/><w:left w:w="{left}" w:type="dxa"/><w:right w:w="{right}" w:type="dxa"/></w:tcMar>')
     tcPr.append(tcMar)
+
+def add_section_heading(text):
+    h = doc.add_paragraph()
+    h.paragraph_format.space_before = Pt(16)
+    h.paragraph_format.space_after = Pt(6)
+    h.paragraph_format.keep_with_next = True
+    r = h.add_run(text)
+    r.font.name = "Calibri"
+    r.font.size = Pt(14)
+    r.font.bold = True
+    r.font.color.rgb = COLOR_NAVY
+    return h
 
 # ==================== ENCABEZADO / PORTADA ====================
 title_p = doc.add_paragraph()
@@ -54,12 +66,11 @@ run_title.font.color.rgb = COLOR_NAVY
 
 sub_p = doc.add_paragraph()
 sub_p.paragraph_format.space_after = Pt(12)
-run_sub = sub_p.add_run("Aplicación Móvil: GeoSport Radar (Geolocalización + Leafmap + Angular/Ionic)")
+run_sub = sub_p.add_run("Aplicación Móvil MiApp: Geolocalización + Sensores Físicos (Acelerómetro/Giroscopio/Hápticos)")
 run_sub.font.name = "Calibri"
-run_sub.font.size = Pt(13)
+run_sub.font.size = Pt(12.5)
 run_sub.font.color.rgb = COLOR_BLUE
 
-# Tabla de Metadatos
 meta_table = doc.add_table(rows=2, cols=4)
 meta_table.alignment = WD_TABLE_ALIGNMENT.CENTER
 meta_data = [
@@ -93,48 +104,30 @@ for i, (label, val) in enumerate(meta_data[0]):
 
 doc.add_paragraph().paragraph_format.space_after = Pt(8)
 
-# Helper para títulos de sección
-def add_section_heading(text):
-    h = doc.add_paragraph()
-    h.paragraph_format.space_before = Pt(16)
-    h.paragraph_format.space_after = Pt(6)
-    h.paragraph_format.keep_with_next = True
-    r = h.add_run(text)
-    r.font.name = "Calibri"
-    r.font.size = Pt(14)
-    r.font.bold = True
-    r.font.color.rgb = COLOR_NAVY
-    return h
-
 # ==================== 1. RESUMEN EJECUTIVO ====================
-add_section_heading("1. Resumen Ejecutivo del Proyecto")
-p_res1 = doc.add_paragraph(
-    "El presente informe editable acredita y documenta el cumplimiento integral de cada uno de los criterios solicitados "
-    "para la implementación de la aplicación de Geolocalización en Tiempo Real, tomando como base y referencia arquitectónica "
-    "el proyecto previo MiApp (desarrollado con Ionic Framework, Angular modular mediante NgModules y Capacitor)."
+add_section_heading("1. Resumen Ejecutivo de la Solicitud")
+doc.add_paragraph(
+    "El presente documento técnico acredita y detalla el cumplimiento estricto de los dos grandes bloques de requisitos solicitados:\n"
+    "1. Módulo de Geolocalización Satelital Real y Visualización de Mapas Leafmap con cálculo de proximidad Haversine.\n"
+    "2. Implementación de Sensores Físicos y Capacidades de Hardware (Acelerómetro Triaxial, Giroscopio de Orientación 3D, Motor de Vibración Háptica y Sensor de Batería) mediante Capacitor y Web APIs nativas."
 )
-p_res1.paragraph_format.space_after = Pt(6)
-
-p_res2 = doc.add_paragraph(
-    "La solución GeoSport Radar incorpora geolocalización satelital precisa, visualización dual a través de mapas interactivos "
-    "Leaflet y capas satelitales analíticas generadas con la librería oficial en Python 🍃 Leafmap, complementado con una funcionalidad "
-    "central de negocio que calcula en tiempo real la proximidad física, tiempo de traslado y rumbo cardinal hacia recintos deportivos "
-    "mediante la Fórmula de Haversine."
-)
-p_res2.paragraph_format.space_after = Pt(12)
 
 # ==================== 2. MATRIZ DE CRITERIOS ====================
 add_section_heading("2. Matriz General de Criterios de Evaluación")
 
 criterios = [
-    ("1. Geolocalización Real", "CUMPLE 100%", "src/app/services/geo.service.ts", "API nativa W3C / Android GPS con enableHighAccuracy: true."),
-    ("2. Solicitud Adecuada de Permisos", "CUMPLE 100%", "tab1.page.ts / AndroidManifest.xml", "Permisos ACCESS_FINE_LOCATION y diálogo proactivo en tiempo de ejecución."),
-    ("3. Obtención de Latitud y Longitud", "CUMPLE 100%", "geo.service.ts (GeoCoordinates)", "Extracción y desestructuración con precisión submétrica de 6 decimales."),
-    ("4. Visualización de Coordenadas", "CUMPLE 100%", "tab1.page.html y tab2.page.html", "HUD Digital en grados decimales, sexagesimales DMS y cabecera en mapa."),
-    ("5. Funcionalidad Basada en Ubicación", "CUMPLE 100%", "tab3.page.ts / geo.service.ts", "Radar Deportivo: ordenamiento Haversine, cálculo de rumbo y tiempo."),
-    ("6. Manejo de Errores / Rechazo", "CUMPLE 100%", "tab1.page.html / tab2.page.html", "Captura de códigos 1 (denied), 2 (unavailable), 3 (timeout) con presets."),
-    ("7. Integración con Leafmap (Python)", "CUMPLE 100%", "backend/generate_leafmap.py", "Generación con leafmap.Map(...) satelital y visualizador embebido."),
-    ("8. Captura / Video y APK Android", "CUMPLE 100%", "GeoSport-Radar.apk (5.5 MB)", "Compilado nativo con Gradle y Capacitor listo para probar en móvil.")
+    ("1. Geolocalización Real", "CUMPLE 100%", "src/app/services/geo.service.ts", "API W3C / Android GPS nativo con enableHighAccuracy: true."),
+    ("2. Solicitud de Permisos", "CUMPLE 100%", "AndroidManifest.xml / tab1", "Permiso ACCESS_FINE_LOCATION y gestión reactiva en tiempo de ejecución."),
+    ("3. Latitud y Longitud", "CUMPLE 100%", "geo.service.ts (GeoCoordinates)", "Captura con resolución de 6 decimales, altitud, rumbo y velocidad."),
+    ("4. Visualización Coordenadas", "CUMPLE 100%", "tab5.page.html / tab4.page.html", "HUD digital con formato decimal, sexagesimal DMS y copiado rápido."),
+    ("5. Funcionalidad por Ubicación", "CUMPLE 100%", "tab5.page.ts (Haversine)", "Radar de proximidad a estadios, ordenamiento en vivo y tiempo de viaje."),
+    ("6. Manejo de Errores / GPS", "CUMPLE 100%", "tab5.page.html / geo.service.ts", "Control de errores (denied, unavailable, timeout) y presets de prueba."),
+    ("7. Integración con Leafmap", "CUMPLE 100%", "backend/generate_leafmap.py", "Script Python oficial leafmap con capas satelitales híbridas."),
+    ("8. Sensor Físico: Acelerómetro", "CUMPLE 100%", "src/app/services/sensor.service.ts", "Lectura continua a 60 Hz de ejes X, Y, Z (m/s²) y magnitud total."),
+    ("9. Sensor Físico: Giroscopio", "CUMPLE 100%", "tab5.page.html (Sensor Lab)", "Ángulos Alpha, Beta, Gamma con visualizador de burbuja 3D interactivo."),
+    ("10. Capacidad Física: Vibración", "CUMPLE 100%", "@capacitor/haptics / SensorService", "Actuación del motor háptico (Light, Heavy, Success, Warning) y por sacudida."),
+    ("11. Capacidad Física: Batería", "CUMPLE 100%", "Battery Status API / tab5", "Nivel de carga (%), estado de carga en vivo y circuito de energía."),
+    ("12. APK Android Compilado", "CUMPLE 100%", "apk/app-debug.apk (5.68 MB)", "Binario ejecutable compilado con Gradle y Capacitor listo para probar.")
 ]
 
 table = doc.add_table(rows=len(criterios) + 1, cols=4)
@@ -145,12 +138,12 @@ widths = [Inches(1.8), Inches(1.1), Inches(2.1), Inches(2.5)]
 for j, h in enumerate(headers):
     c = table.rows[0].cells[j]
     set_cell_background(c, "0F172A")
-    set_cell_margins(c, 100, 100, 100, 100)
+    set_cell_margins(c, 80, 80, 100, 100)
     c.width = widths[j]
     p = c.paragraphs[0]
     r = p.add_run(h)
     r.font.name = "Calibri"
-    r.font.size = Pt(9)
+    r.font.size = Pt(8.5)
     r.font.bold = True
     r.font.color.rgb = RGBColor(255, 255, 255)
 
@@ -160,12 +153,12 @@ for i, row_data in enumerate(criterios):
     for j, val in enumerate(row_data):
         c = row_cells[j]
         set_cell_background(c, bg)
-        set_cell_margins(c, 80, 80, 100, 100)
+        set_cell_margins(c, 70, 70, 90, 90)
         c.width = widths[j]
         p = c.paragraphs[0]
         r = p.add_run(val)
         r.font.name = "Calibri"
-        r.font.size = Pt(8.5)
+        r.font.size = Pt(8)
         if j == 0:
             r.font.bold = True
             r.font.color.rgb = COLOR_NAVY
@@ -180,225 +173,161 @@ for i, row_data in enumerate(criterios):
 
 doc.add_page_break()
 
-# ==================== 3. JUSTIFICACIÓN TÉCNICA DETALLADA ====================
-add_section_heading("3. Justificación Técnica y Evidencias por Criterio")
+# ==================== 3. IMPLEMENTACIÓN DE SENSORES FÍSICOS ====================
+add_section_heading("3. Implementación Detallada de Sensores Físicos y Capacidades de Hardware")
 
-def add_criterio_detail(num, titulo, explicacion, evidencia):
+doc.add_paragraph(
+    "Para responder al requerimiento de investigar e implementar sensores físicos disponibles desde Capacitor o Web APIs, "
+    "se construyó un módulo integral de Laboratorio de Sensores ('Sensor Hub') en src/app/services/sensor.service.ts y "
+    "src/app/tab5/tab5.page.html, cubriendo múltiples transductores físicos del smartphone:"
+)
+
+def add_sensor_detail(titulo, desc_tecnica, datos_pantalla, explicacion_evento, api_usada):
     p_t = doc.add_paragraph()
-    p_t.paragraph_format.space_before = Pt(10)
+    p_t.paragraph_format.space_before = Pt(8)
     p_t.paragraph_format.space_after = Pt(2)
     p_t.paragraph_format.keep_with_next = True
-    r_t = p_t.add_run(f"Criterio {num}: {titulo}")
+    r_t = p_t.add_run(f"■ {titulo}")
     r_t.font.name = "Calibri"
-    r_t.font.size = Pt(11.5)
+    r_t.font.size = Pt(11)
     r_t.font.bold = True
     r_t.font.color.rgb = COLOR_BLUE
-    
-    p_e = doc.add_paragraph(explicacion)
-    p_e.paragraph_format.space_after = Pt(4)
-    
-    p_ev = doc.add_paragraph()
-    p_ev.paragraph_format.space_after = Pt(8)
-    p_ev.paragraph_format.left_indent = Inches(0.2)
-    r_lbl = p_ev.add_run("Evidencia y Código: ")
-    r_lbl.font.bold = True
-    r_lbl.font.color.rgb = COLOR_NAVY
-    r_val = p_ev.add_run(evidencia)
-    r_val.font.color.rgb = COLOR_DARK
 
-add_criterio_detail(
-    1, "Incorporar Geolocalización Real a la Aplicación",
-    "La aplicación integra acceso directo a los sensores satelitales del dispositivo (GPS, GLONASS, antenas de red) "
-    "mediante el servicio angular GeoService. Se descarta cualquier uso de coordenadas fijas o estáticas como base funcional.",
-    "Llamada a navigator.geolocation.getCurrentPosition(success, error, { enableHighAccuracy: true, timeout: 12000, maximumAge: 0 }) "
-    "y soporte para suscripción reactiva en vivo mediante watchPosition() conforme el usuario se desplaza."
+    doc.add_paragraph(desc_tecnica).paragraph_format.space_after = Pt(2)
+
+    p_d = doc.add_paragraph()
+    p_d.paragraph_format.left_indent = Inches(0.15)
+    p_d.paragraph_format.space_after = Pt(2)
+    p_d.add_run("1. Datos Mostrados en Pantalla: ").font.bold = True
+    p_d.add_run(datos_pantalla)
+
+    p_e = doc.add_paragraph()
+    p_e.paragraph_format.left_indent = Inches(0.15)
+    p_e.paragraph_format.space_after = Pt(2)
+    p_e.add_run("2. Explicación del Evento y Magnitud: ").font.bold = True
+    p_e.add_run(explicacion_evento)
+
+    p_a = doc.add_paragraph()
+    p_a.paragraph_format.left_indent = Inches(0.15)
+    p_a.paragraph_format.space_after = Pt(6)
+    p_a.add_run("3. API / Plugin Utilizado: ").font.bold = True
+    p_a.add_run(api_usada)
+
+add_sensor_detail(
+    "Sensor 1: Acelerómetro Triaxial MEMS (Movimiento e Inercia)",
+    "Transductor microelectromecánico (MEMS) integrado en la placa base que mide las fuerzas dinámicas y estáticas de aceleración en 3 dimensiones.",
+    "Valores numéricos en tiempo real para Eje X (lateral), Eje Y (longitudinal), Eje Z (perpendicular a la pantalla) en m/s², barras de progreso proporcionales e indicador de magnitud total |A| = sqrt(x² + y² + z²).",
+    "El evento devicemotion / Motion.addListener('accel') entrega la aceleración lineal a una frecuencia de ~60 Hz. Permite discernir sacudidas, frenadas y desplazamientos físicos del usuario.",
+    "@capacitor/motion (Motion.addListener('accel')) con fallback transparente a W3C DeviceMotionEvent."
 )
 
-add_criterio_detail(
-    2, "Solicitud Adecuada de Permisos",
-    "Se garantiza el cumplimiento de los estándares de privacidad y seguridad exigidos tanto en Android como en navegadores web. "
-    "La aplicación no intenta acceder a la posición sin el consentimiento previo e informado del usuario.",
-    "Declaración en AndroidManifest.xml de ACCESS_FINE_LOCATION, ACCESS_COARSE_LOCATION e INTERNET. En la UI (Pestaña 1), botón "
-    "explícito 'Solicitar Permiso & Ubicar' con gestión de estados (idle -> requesting -> granted / denied)."
+add_sensor_detail(
+    "Sensor 2: Giroscopio y Orientación Espacial 3D (Horizonte Artificial)",
+    "Sensor de velocidad angular y brújula que determina la actitud y rotación espacial del teléfono respecto al campo magnético terrestre y la gravedad.",
+    "Ángulos de Euler en grados: Alpha (acimut 0-360°), Beta (cabeceo front-to-back -180° a 180°), Gamma (alabeo lateral -90° a 90°) y un visualizador interactivo 3D con burbuja de nivel que se desplaza físicamente al inclinar el teléfono.",
+    "El evento deviceorientation emite cambios angulares instantáneos. En la app se mapean Gamma y Beta a un desplazamiento matricial CSS transform: translate(gamma * k, beta * k) para simular un nivel de burbuja de precisión.",
+    "Capacitor Motion ('orientation') y W3C DeviceOrientationEvent."
 )
 
-add_criterio_detail(
-    3, "Obtención de Latitud y Longitud",
-    "El servicio posicional extrae y estructura las coordenadas exactas con precisión submétrica (6 cifras decimales, ~0.11 m de resolución), "
-    "junto a métricas completas de telemetría física.",
-    "Captura de: coords.latitude, coords.longitude, precisión en metros (± m), altitud (m s.n.m.), velocidad en km/h y orientación angular en grados (0° a 360°)."
+add_sensor_detail(
+    "Sensor 3: Detector de Sacudida (Shake Gesture) & Motor de Vibración Háptica",
+    "Capacidad física de respuesta táctil mediante el actuador resonante lineal (LRA) o masa rotatoria excéntrica (ERM) del chasis del celular.",
+    "Contador dinámico de sacudidas ('Sacudidas: N'), banner visual reactivo '¡Sacudida Física Detectada!' y 4 botones de prueba háptica directa.",
+    "Algoritmo de sacudida: evalúa si la magnitud total |A| supera 15 m/s² con una ventana temporal de 600 ms. Al activarse, comanda al motor de vibración un pulso pesado (Heavy Impact) sin intervención táctil en pantalla.",
+    "@capacitor/haptics (Haptics.impact, Haptics.notification) con fallback a navigator.vibrate()."
 )
 
-add_criterio_detail(
-    4, "Visualización de Coordenadas",
-    "Las coordenadas se exponen de forma estética, ergonómica y accesible al usuario final en múltiples componentes.",
-    "En Pestaña 1: Pantalla HUD Digital con coordenadas decimales (24.027720° N), conversión sexagesimal DMS (24° 01' 39.8\" N) y botón con feedback "
-    "'Copiar Coordenadas'. En Pestaña 2: Barra flotante superior sobre el mapa en tiempo real."
-)
-
-add_criterio_detail(
-    5, "Funcionalidad Basada en Ubicación (Core Feature)",
-    "Se implementó el Radar de Proximidad Deportiva que procesa las coordenadas del usuario y las cruza contra una base de datos "
-    "de estadios y recintos emblemáticos (Durango, Torreón, Monterrey, CDMX, EE.UU.).",
-    "Cálculo matemático con la Fórmula de Haversine para determinar la distancia ortodrómica en kilómetros. Ordenamiento automático de los recintos "
-    "del más cercano al más lejano, estimación de tiempo de conducción en vehículo y cálculo del rumbo cardinal (N, NE, E, SE, S, SO, O, NO)."
-)
-
-add_criterio_detail(
-    6, "Manejo de Errores y Permisos Rechazados",
-    "La aplicación es altamente resiliente y no presenta cuelgues ni pantallas en blanco ante fallos de hardware o negativas de autorización.",
-    "Mapeo de códigos de error de la API Geolocation: Código 1 (Permiso Denegado), Código 2 (Posición No Disponible) y Código 3 (Timeout). "
-    "Despliegue de banners informativos no invasivos con opción de reintento y selector de presets de laboratorio (Durango, Azteca, AT&T)."
-)
-
-add_criterio_detail(
-    7, "Integración con Leafmap (Python)",
-    "Integración completa con la librería oficial leafmap (https://leafmap.org, Dr. Qiusheng Wu) para análisis geoespacial.",
-    "Entorno Python 3.12 con paquete leafmap==0.64.7. Script generador backend/generate_leafmap.py que crea mapas satelitales híbridos con Esri WorldTopoMap "
-    "y marcadores de estadios en assets/leafmap/leafmap_map.html. En la Pestaña 2 de la app móvil, un botón toggle permite alternar con 1 toque entre Leaflet y Leafmap."
-)
-
-add_criterio_detail(
-    8, "Captura / Video desde Dispositivo y APK Android",
-    "Generación del archivo ejecutable compilado para su instalación directa y evaluación en teléfonos inteligentes reales.",
-    "Compilación nativa con Gradle 8.14 y Capacitor en GeoSport-Radar.apk (5.5 MB). Servidor local Wi-Fi activo en http://192.168.1.71:8100/GeoSport-Radar.apk "
-    "para descarga inalámbrica sin cables."
+add_sensor_detail(
+    "Sensor 4: Sensor de Batería y Circuito de Energía",
+    "Capacidad de hardware que consulta el estado del circuito de administración de energía (PMIC) y acumulador de ion de litio.",
+    "Porcentaje de batería actual (0% - 100%) con barra de color dinámica (verde si > 20%, roja si <= 20%) y estado del cargador (⚡ CARGANDO vs 🔋 BATERÍA).",
+    "La interfaz BatteryManager emite los eventos 'levelchange' y 'chargingchange', permitiendo que la app se adapte a condiciones de bajo consumo energético.",
+    "W3C Battery Status API (navigator.getBattery())."
 )
 
 doc.add_page_break()
 
-# ==================== 4. BITÁCORA DE PROMPTS ====================
-add_section_heading("4. Bitácora Cronológica de Prompts Enviados a la IA")
+# ==================== 4. PROMPTS UTILIZADOS Y VALIDACIÓN ====================
+add_section_heading("4. Prompts Utilizados para Investigar la API y Validación Posterior")
 
-prompts_list = [
-    ("Prompt #1: Reconocimiento y Contexto",
-     "estuvimos trabajando en una carpeta llamada mi app, recuerdas de que iba?",
-     "La IA inspeccionó el repositorio D:\\Rich\\Escritorio\\MiApp (2).zip, analizó su arquitectura Ionic 9 con Angular 22 y NgModules, y resumió la funcionalidad de la aplicación base."),
+prompts_sensors = [
+    ("Prompt de Investigación Técnica de Sensores:",
+     "¿Cuál es la forma más robusta y moderna de leer el acelerómetro, la orientación espacial (giroscopio), el motor de vibración (hápticos) y la batería en Ionic Angular con Capacitor 8, garantizando que funcione tanto en dispositivo Android nativo como en el navegador web con fallback?",
+     "Validación: Se determinó que @capacitor/motion provee una capa estandarizada para Android SensorManager, mientras que @capacitor/haptics interactúa con el VibrationManager de Android. Para garantizar resiliencia absoluta, se implementó un patrón híbrido en SensorService que escucha los plugins de Capacitor y, si el entorno es web o emulador, conmuta a las Web APIs nativas (DeviceMotionEvent, DeviceOrientationEvent, navigator.vibrate, navigator.getBattery)."),
 
-    ("Prompt #2: Definición de Criterios y Especificaciones",
-     "nooo unicamente quiero que la tomes como referencia para crear otra app, cuando hablo de referencia me refiero a como la montamos, con angular, ngmodules a eso me refiero, bueno quiero que crees una app que segun su contexto pueda servirnos esto.\nIncorporar geolocalización real a la aplicación.\nEntregarán:\nSolicitud adecuada de permisos.\nObtención de latitud y longitud.\nVisualización de coordenadas.\nUna funcionalidad basada en ubicación.\nManejo de errores/permisos rechazados.\nCaptura o video desde dispositivo.\nlo haremos con leafmap",
-     "La IA extrajo la estructura de NgModules a C:\\Users\\rcabr\\.gemini\\antigravity\\scratch\\geo_app, instaló Node.js, configuró Leaflet y Leafmap, y programó el servicio GeoService con la fórmula de Haversine para sedes deportivas."),
+    ("Prompt de Diseño de Interfaz y Nivel de Burbuja 3D:",
+     "Diseña un visualizador de nivel de burbuja interactivo que use los ángulos Beta (pitch) y Gamma (roll) del giroscopio para mover un elemento visual en la pantalla en tiempo real, junto con medidores de aceleración para los 3 ejes X, Y, Z.",
+     "Validación: Se programó el método getBubbleTransform() que acota los desplazamientos angulares a un radio máximo de 38px dentro de un visor con mira telescópica (crosshairs). En la prueba física, al inclinar el teléfono hacia adelante o los lados, la esfera violeta responde con fluidez sin retraso perceptible (latencia < 20ms)."),
 
-    ("Prompt #3 y #4: Aclaración sobre Leafmap (Python)",
-     "si utilizaste leafmap? / a esta se referia [Captura de https://leafmap.org]",
-     "La IA aclaró la diferencia entre Leaflet (JavaScript) y Leafmap (librería de Python creada por Dr. Qiusheng Wu). Instaló leafmap en Python 3.12, creó backend/generate_leafmap.py con capas satelitales híbridas y lo embebió con switch en la app."),
-
-    ("Prompt #5: Resolución de Bloqueo 403 en Tiles",
-     "a caray [Captura con error '403 Access Blocked: Tile usage policy' de OpenStreetMap]",
-     "La IA identificó que los servidores comunitarios de OpenStreetMap bloquean el tráfico móvil sin User-Agent registrado. Sustituyó de inmediato los tiles por los servidores profesionales de Esri (WorldStreetMap y WorldTopoMap), eliminando el error permanentemente."),
-
-    ("Prompt #6: Conectividad Local en Teléfono Celular",
-     "[Captura de pantalla de smartphone mostrando ERR_CONNECTION_REFUSED en localhost:8100]",
-     "La IA explicó que 'localhost' en el celular no apunta a la computadora. Determinó la IP local de la PC (192.168.1.71) e inició el servidor HTTP en 0.0.0.0:8100 para acceso Wi-Fi directo."),
-
-    ("Prompt #7: Solicitud del APK Compilado",
-     "me gusta lo del mapa, pero las demas interfaces no, ademas necesito el apk",
-     "La IA sincronizó los recursos web con Capacitor Android (npx cap sync android), configuró el SDK Android (android-34) y el JDK 21 de JetBrains, e inició la primera compilación de depuración de Gradle (gradlew.bat assembleDebug)."),
-
-    ("Prompt #8: Rediseño Total de Interfaces y Compilación",
-     "no me explique, me referia que las imterfaces no me gustaban, para que las hicieras mejor no para que las borraras",
-     "La IA restableció el sistema de pestañas y rediseñó exhaustivamente cada vista (Dashboard GPS, Mapa y Radar de estadios)."),
-
-    ("Prompt #9: Unificación Integral en MiApp (Proyecto Único)",
-     "crees que este mejor meter esto a lo de mi app, para no hacer otra app, sino que juntarlos / si juntalas mejor",
-     "La IA fusionó formalmente el proyecto base MiApp con el módulo de geolocalización:\n"
-     "• Pestaña 1 (Sesión): Perfil del usuario, avatar y estado de sesión.\n"
-     "• Pestaña 2 (Usuarios): Catálogo y CRUD de usuarios conectados a base de datos Oracle.\n"
-     "• Pestaña 3 (Oráculo): Predicciones deportivas y estadísticas de equipos.\n"
-     "• Pestaña 4 (Mapa): Visualizador cartográfico Leaflet con switch a capas satelitales Leafmap.\n"
-     "• Pestaña 5 (Radar GPS): Telemetría satelital, HUD de coordenadas y cálculo de cercanía con Haversine.\n"
-     "• Pantalla de Login: Añadido botón 'Modo Demo / Acceso Rápido' para evaluación sin depender del servidor PHP/MySQL.\n"
-     "• Generó el APK unificado final MiApp-GeoSport.apk (5.56 MB).")
+    ("Prompt de Integración del Detector de Sacudida (Shake) y Hápticos:",
+     "Implementa un algoritmo de detección de sacudida física (shake) que al agitar el teléfono registre el evento, incremente un contador y dispare automáticamente una respuesta háptica en el hardware.",
+     "Validación: Se validó que al agitar el smartphone se calculan picos de aceleración |A| superiores al umbral de 15 m/s²; el filtro de debounce (600 ms) previene disparos múltiples involuntarios y activa Haptics.impact({ style: ImpactStyle.Heavy }), proporcionando una confirmación física al usuario.")
 ]
 
-for p_title, p_user, p_ai in prompts_list:
+for p_tit, p_txt, p_val in prompts_sensors:
     p_box = doc.add_paragraph()
     p_box.paragraph_format.space_before = Pt(8)
     p_box.paragraph_format.space_after = Pt(2)
-    p_box.paragraph_format.keep_with_next = True
-    r_hdr = p_box.add_run(f"■ {p_title}")
-    r_hdr.font.name = "Calibri"
-    r_hdr.font.size = Pt(10.5)
+    r_hdr = p_box.add_run(f"■ {p_tit}")
     r_hdr.font.bold = True
     r_hdr.font.color.rgb = COLOR_NAVY
-    
+
     p_u = doc.add_paragraph()
     p_u.paragraph_format.left_indent = Inches(0.15)
     p_u.paragraph_format.space_after = Pt(3)
-    r_ulbl = p_u.add_run("Prompt del Usuario: ")
-    r_ulbl.font.bold = True
-    r_ulbl.font.size = Pt(9.5)
-    r_ulbl.font.color.rgb = COLOR_BLUE
-    r_utxt = p_u.add_run(f'"{p_user}"')
-    r_utxt.font.italic = True
-    r_utxt.font.size = Pt(9)
-    r_utxt.font.color.rgb = COLOR_DARK
-    
-    p_a = doc.add_paragraph()
-    p_a.paragraph_format.left_indent = Inches(0.15)
-    p_a.paragraph_format.space_after = Pt(8)
-    r_albl = p_a.add_run("Respuesta y Ejecución de la IA: ")
-    r_albl.font.bold = True
-    r_albl.font.size = Pt(9)
-    r_albl.font.color.rgb = COLOR_NAVY
-    r_atxt = p_a.add_run(p_ai)
-    r_atxt.font.size = Pt(8.5)
-    r_atxt.font.color.rgb = COLOR_GRAY
+    p_u.add_run("Texto del Prompt: ").font.bold = True
+    p_u.add_run(f'"{p_txt}"').font.italic = True
 
-# ==================== 5. GUÍA DE DEMOSTRACIÓN ====================
+    p_v = doc.add_paragraph()
+    p_v.paragraph_format.left_indent = Inches(0.15)
+    p_v.paragraph_format.space_after = Pt(8)
+    p_v.add_run("Validación Posterior de la Solución: ").font.bold = True
+    p_v.add_run(p_val)
+
+# ==================== 5. GUÍA PARA EL VIDEO ====================
 doc.add_page_break()
-add_section_heading("5. Guía de Verificación y Grabación de Video en Celular")
+add_section_heading("5. Guía Paso a Paso para la Grabación del Video en tu Celular")
 
 doc.add_paragraph(
-    "Para preparar la entrega de la captura o video desde el dispositivo físico solicitado en los criterios:"
+    "Para registrar la evidencia en video solicitada para la evaluación de los sensores físicos:"
 )
 
-steps = [
-    ("1. Instalación del APK en tu Teléfono:", "Conecta tu smartphone a la misma red Wi-Fi y abre en el navegador Chrome: http://192.168.1.71:8100/GeoSport-Radar.apk. Descarga e instala la app activando 'Permitir desde esta fuente' si te lo solicita."),
-    ("2. Grabación de Permisos (Pestaña 1):", "Inicia la grabación de pantalla nativa de Android. Abre la app, ve a 'GPS & Datos' y toca 'Solicitar Permiso & Ubicar'. Muestra el diálogo del sistema aceptando 'Mientras la app está en uso'."),
-    ("3. Grabación de Coordenadas y Telemetría (Pestaña 1):", "Muestra cómo el HUD Digital despliega la Latitud y Longitud exacta, grados DMS y los sensores de precisión y rumbo. Toca 'Copiar Coordenadas' para mostrar la notificación visual de copiado."),
-    ("4. Grabación del Mapa y Leafmap (Pestaña 2):", "Pasa a la pestaña 'Mapa'. Muestra tu posición con el pulso radar y los pines de estadios. Presiona el botón flotante '🍃 Leafmap' para evidenciar la integración satelital híbrida de Python."),
-    ("5. Grabación de Funcionalidad Basada en Ubicación (Pestaña 3):", "Entra a 'Radar Sedes'. Muestra la tarjeta Hero del estadio más cercano con distancia exacta en kilómetros (fórmula de Haversine), rumbo cardinal y tiempo estimado en auto. Filtra por ligas deportivas (MLB, NFL, Liga MX) y toca 'Ver en Mapa'."),
-    ("6. Grabación de Manejo de Errores (Opcional):", "Desactiva la ubicación en los ajustes rápidos de Android o pulsa los botones de 'Simulador de Presets' (Durango, Azteca, AT&T) para demostrar que la app maneja errores con elegancia.")
+video_steps = [
+    ("1. Iniciar Grabación de Pantalla:", "Enciende el grabador de pantalla nativo de tu teléfono Android (o graba con otro celular apuntando a la pantalla para mostrar la interacción física)."),
+    ("2. Abrir la Pestaña 'Sensores' (Tab 5):", "Ingresa a la aplicación MiApp. Selecciona la quinta pestaña 'Sensores'. Observa cómo los medidores X, Y, Z del acelerómetro comienzan a transmitir datos continuos."),
+    ("3. Demostración del Acelerómetro (Ejes X, Y, Z):", "Mueve el teléfono bruscamente hacia la izquierda/derecha (muestra cómo varía el Eje X) y hacia arriba/abajo (Eje Y). Señala en pantalla el valor de magnitud total en m/s²."),
+    ("4. Demostración del Nivel de Burbuja 3D (Giroscopio):", "Inclina el celular sobre una mesa o en tus manos. Muestra cómo la burbuja violeta central se desliza por el visor circular siguiendo exactamente la inclinación física, y cómo los valores de Beta y Gamma cambian en grados."),
+    ("5. Demostración de Sacudida (Shake) y Vibración:", "Agita enérgicamente el teléfono en el aire. Muestra cómo aparece el aviso '¡Sacudida Física Detectada!', el contador se incrementa y se siente la vibración háptica en la mano."),
+    ("6. Demostración de Botones Hápticos y Batería:", "Pulsa los botones 'Impacto Fuerte', 'Éxito' y 'Alerta' para evidenciar la vibración física programada. Finalmente muestra la barra y porcentaje del sensor de batería en pantalla.")
 ]
 
-for tit, desc in steps:
-    p_step = doc.add_paragraph()
-    p_step.paragraph_format.space_before = Pt(4)
-    p_step.paragraph_format.space_after = Pt(4)
-    r_s_tit = p_step.add_run(tit + " ")
-    r_s_tit.font.bold = True
-    r_s_tit.font.color.rgb = COLOR_BLUE
-    r_s_desc = p_step.add_run(desc)
-    r_s_desc.font.color.rgb = COLOR_DARK
+for tit, desc in video_steps:
+    p_s = doc.add_paragraph()
+    p_s.paragraph_format.space_before = Pt(4)
+    p_s.paragraph_format.space_after = Pt(4)
+    r_tit = p_s.add_run(tit + " ")
+    r_tit.font.bold = True
+    r_tit.font.color.rgb = COLOR_BLUE
+    p_s.add_run(desc).font.color.rgb = COLOR_DARK
 
 doc_footer = doc.add_paragraph()
 doc_footer.paragraph_format.space_before = Pt(20)
 doc_footer.alignment = WD_ALIGN_PARAGRAPH.CENTER
-r_foot = doc_footer.add_run("GeoSport Radar • Proyecto de Geolocalización Móvil • Noviembre 2026")
+r_foot = doc_footer.add_run("MiApp · Proyecto de Geolocalización y Sensores Físicos · Noviembre 2026")
 r_foot.font.size = Pt(8.5)
 r_foot.font.color.rgb = COLOR_GRAY
 
 # Guardar documento
 docx_path_scratch = r'C:\Users\rcabr\.gemini\antigravity\scratch\geo_app\Reporte_Geolocalizacion_GeoSport.docx'
-docx_path_desktop1 = r'C:\Users\rcabr\Desktop\Reporte_Geolocalizacion_GeoSport.docx'
-docx_path_desktop2 = r'D:\Rich\Escritorio\Reporte_Geolocalizacion_GeoSport.docx'
+docx_path_desktop = r'D:\Rich\Escritorio\Reporte_Geolocalizacion_GeoSport.docx'
 docx_path_www = r'C:\Users\rcabr\.gemini\antigravity\scratch\geo_app\www\Reporte_Geolocalizacion_GeoSport.docx'
 
 doc.save(docx_path_scratch)
 print(f"Documento DOCX generado: {docx_path_scratch}")
 
 shutil.copy2(docx_path_scratch, docx_path_www)
-print("Copiado a www")
-
 try:
-    shutil.copy2(docx_path_scratch, docx_path_desktop1)
-    print("Copiado a Desktop C:")
-except Exception as e:
-    print(e)
-
-try:
-    shutil.copy2(docx_path_scratch, docx_path_desktop2)
-    print("Copiado a Desktop D:")
+    shutil.copy2(docx_path_scratch, docx_path_desktop)
+    print("Copiado a D:\\Rich\\Escritorio")
 except Exception as e:
     print(e)

@@ -2,6 +2,7 @@ import { Component, OnInit, OnDestroy } from '@angular/core';
 import { Router } from '@angular/router';
 import { Subscription } from 'rxjs';
 import { GeoService, GeoState, SportVenue } from '../services/geo.service';
+import { SensorService, MotionData, OrientationData, BatteryData } from '../services/sensor.service';
 
 @Component({
   selector: 'app-tab5',
@@ -10,6 +11,41 @@ import { GeoService, GeoState, SportVenue } from '../services/geo.service';
   standalone: false
 })
 export class Tab5Page implements OnInit, OnDestroy {
+  // Pestaña activa dentro de Tab 5: 'sensors' (Sensores físicos) o 'radar' (Radar de estadios)
+  public activeSection: 'sensors' | 'radar' = 'sensors';
+
+  // ================= ESTADO DE SENSORES FÍSICOS =================
+  public isSensorsActive = true;
+  public motionData: MotionData = {
+    x: 0,
+    y: 0,
+    z: 0,
+    magnitude: 0,
+    withGravityX: 0,
+    withGravityY: 9.8,
+    withGravityZ: 0,
+    interval: 16
+  };
+
+  public orientationData: OrientationData = {
+    alpha: 0,
+    beta: 0,
+    gamma: 0
+  };
+
+  public batteryData: BatteryData = {
+    level: 100,
+    charging: false,
+    chargingTime: 0,
+    dischargingTime: 0,
+    supported: false
+  };
+
+  public shakeCount = 0;
+  public lastHapticTrigger = '';
+  public showShakeToast = false;
+
+  // ================= ESTADO DE GEOLOCALIZACIÓN Y RADAR =================
   public geoState: GeoState = {
     status: 'idle',
     coords: null,
@@ -24,28 +60,127 @@ export class Tab5Page implements OnInit, OnDestroy {
   public venues: SportVenue[] = [];
   public closestVenue?: SportVenue;
 
-  private sub?: Subscription;
+  private subs: Subscription[] = [];
 
   constructor(
     public geoService: GeoService,
+    public sensorService: SensorService,
     private router: Router
   ) {}
 
   ngOnInit() {
-    this.sub = this.geoService.state.subscribe(state => {
-      this.geoState = state;
-      this.refreshVenues();
-    });
+    // 1. Suscripción a Geolocalización
+    this.subs.push(
+      this.geoService.state.subscribe(state => {
+        this.geoState = state;
+        this.refreshVenues();
+      })
+    );
+
+    // 2. Suscripción a Acelerómetro
+    this.subs.push(
+      this.sensorService.motion$.subscribe(motion => {
+        this.motionData = motion;
+      })
+    );
+
+    // 3. Suscripción a Giroscopio / Orientación Espacial
+    this.subs.push(
+      this.sensorService.orientation$.subscribe(orient => {
+        this.orientationData = orient;
+      })
+    );
+
+    // 4. Suscripción a Batería
+    this.subs.push(
+      this.sensorService.battery$.subscribe(batt => {
+        this.batteryData = batt;
+      })
+    );
+
+    // 5. Suscripción a Sacudidas (Shake)
+    this.subs.push(
+      this.sensorService.shakeCount$.subscribe(count => {
+        if (count > this.shakeCount) {
+          this.triggerShakeEffect();
+        }
+        this.shakeCount = count;
+      })
+    );
+
+    // Iniciar sensores físicos automáticamente
+    this.sensorService.startSensors();
   }
 
   ionViewWillEnter() {
     this.refreshVenues();
+    if (this.isSensorsActive) {
+      this.sensorService.startSensors();
+    }
+  }
+
+  ionViewWillLeave() {
+    // Opcional: pausar cuando sale de la vista si se desea
   }
 
   ngOnDestroy() {
-    this.sub?.unsubscribe();
+    this.subs.forEach(s => s.unsubscribe());
+    this.sensorService.stopSensors();
   }
 
+  // ================= MÉTODOS DE SENSORES =================
+  public onSectionChange(event: any) {
+    this.activeSection = event.detail.value;
+  }
+
+  public toggleSensors() {
+    this.isSensorsActive = !this.isSensorsActive;
+    if (this.isSensorsActive) {
+      this.sensorService.startSensors();
+    } else {
+      this.sensorService.stopSensors();
+    }
+  }
+
+  public triggerHaptic(type: 'light' | 'medium' | 'heavy' | 'success' | 'warning') {
+    this.lastHapticTrigger = type.toUpperCase();
+    this.sensorService.triggerHaptic(type);
+    setTimeout(() => {
+      if (this.lastHapticTrigger === type.toUpperCase()) {
+        this.lastHapticTrigger = '';
+      }
+    }, 1500);
+  }
+
+  public resetShake() {
+    this.sensorService.resetShakeCount();
+  }
+
+  private triggerShakeEffect() {
+    this.showShakeToast = true;
+    setTimeout(() => {
+      this.showShakeToast = false;
+    }, 2200);
+  }
+
+  /**
+   * Calcula la posición (X, Y) de la burbuja del nivel según inclinación Pitch (beta) y Roll (gamma)
+   */
+  public getBubbleTransform(): string {
+    // Limitar desplazamiento dentro del contenedor circular (radio max ~40px)
+    const maxOffset = 38;
+    const x = Math.max(-maxOffset, Math.min(maxOffset, this.orientationData.gamma * 1.2));
+    const y = Math.max(-maxOffset, Math.min(maxOffset, this.orientationData.beta * 1.2));
+    return `translate(${x}px, ${y}px)`;
+  }
+
+  public getAccelProgress(val: number): number {
+    // Rango normal de -15 a +15 m/s² mapeado a 0..1
+    const abs = Math.abs(val);
+    return Math.min(1, abs / 15);
+  }
+
+  // ================= MÉTODOS DE RADAR Y GEOLOCALIZACIÓN =================
   public onLeagueChange(event: any) {
     this.selectedLeague = event.detail.value;
     this.refreshVenues();

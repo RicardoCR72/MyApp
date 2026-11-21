@@ -20,7 +20,10 @@ import {
   IonItem,
   IonList,
   IonSelect,
-  IonSelectOption
+  IonSelectOption,
+  IonProgressBar,
+  IonToggle,
+  IonSpinner
 } from '@ionic/angular';
 import { Tab5Page } from './tab5.page';
 import { Tab5PageRoutingModule } from './tab5-routing.module';
@@ -48,6 +51,9 @@ import { Tab5PageRoutingModule } from './tab5-routing.module';
     IonList,
     IonSelect,
     IonSelectOption,
+    IonProgressBar,
+    IonToggle,
+    IonSpinner,
     Tab5PageRoutingModule
   ],
   declarations: [Tab5Page]

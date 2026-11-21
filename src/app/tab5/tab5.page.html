@@ -1,22 +1,37 @@
 <ion-header class="ion-no-border">
-  <ion-toolbar class="radar-toolbar">
-    <div class="radar-brand" slot="start">
-      <div class="radar-icon-box">
-        <ion-icon name="compass"></ion-icon>
+  <ion-toolbar class="main-toolbar">
+    <div class="header-brand" slot="start">
+      <div class="brand-icon">
+        <ion-icon [name]="activeSection === 'sensors' ? 'hardware-chip' : 'compass'"></ion-icon>
       </div>
       <div>
-        <ion-title>Radar Deportivo</ion-title>
-        <span class="sub-brand">Ordenamiento por Proximidad Real</span>
+        <ion-title>{{ activeSection === 'sensors' ? 'Sensores Físicos & MEMS' : 'Radar Deportivo GPS' }}</ion-title>
+        <span class="sub-brand">{{ activeSection === 'sensors' ? 'Acelerómetro · Giroscopio · Hápticos · Batería' : 'Ordenamiento por Proximidad Haversine' }}</span>
       </div>
     </div>
 
-    <ion-badge slot="end" [class]="'haversine-badge ' + (geoState.coords ? 'active' : 'waiting')">
-      {{ geoState.coords ? 'Fórmula Haversine ✓' : 'Esperando GPS' }}
+    <ion-badge slot="end" [class]="'header-badge ' + (activeSection === 'sensors' ? (isSensorsActive ? 'badge-active' : 'badge-idle') : (geoState.coords ? 'badge-active' : 'badge-idle'))">
+      <span *ngIf="activeSection === 'sensors'">{{ isSensorsActive ? '● SENSORES 60Hz' : '○ PAUSADO' }}</span>
+      <span *ngIf="activeSection === 'radar'">{{ geoState.coords ? 'Haversine ✓' : 'Esperando GPS' }}</span>
     </ion-badge>
   </ion-toolbar>
 
-  <!-- FILTRO DE LIGAS (SCROLLABLE PILLS) -->
-  <ion-toolbar class="filter-toolbar">
+  <!-- SELECTOR DE SECCIÓN (SENSORES FÍSICOS vs RADAR SEDES) -->
+  <ion-toolbar class="section-toolbar">
+    <ion-segment [value]="activeSection" (ionChange)="onSectionChange($event)" class="section-segment">
+      <ion-segment-button value="sensors">
+        <ion-icon name="speedometer-outline"></ion-icon>
+        <ion-label>⚡ Sensores Físicos</ion-label>
+      </ion-segment-button>
+      <ion-segment-button value="radar">
+        <ion-icon name="navigate-circle-outline"></ion-icon>
+        <ion-label>🏟️ Radar Sedes GPS</ion-label>
+      </ion-segment-button>
+    </ion-segment>
+  </ion-toolbar>
+
+  <!-- FILTRO DE LIGAS (Solo visible si está en Radar) -->
+  <ion-toolbar *ngIf="activeSection === 'radar'" class="filter-toolbar">
     <ion-segment [value]="selectedLeague" (ionChange)="onLeagueChange($event)" scrollable="true" class="custom-segment">
       <ion-segment-button value="ALL">
         <ion-label>🌟 Todas</ion-label>
@@ -37,8 +52,239 @@
   </ion-toolbar>
 </ion-header>
 
-<ion-content [fullscreen]="true" class="radar-content">
-  <div class="radar-container">
+<ion-content [fullscreen]="true" class="page-content">
+
+  <!-- ========================================================================= -->
+  <!-- VISTA 1: LABORATORIO DE SENSORES FÍSICOS (ACELERÓMETRO, GIROSCOPIO, ETC.) -->
+  <!-- ========================================================================= -->
+  <div *ngIf="activeSection === 'sensors'" class="sensors-container">
+
+    <!-- TOAST INFORMATIVO DE SACUDIDA (SHAKE DETECTED) -->
+    <div *ngIf="showShakeToast" class="shake-alert-toast">
+      <span class="shake-icon">⚡</span>
+      <div>
+        <strong>¡Sacudida Física Detectada!</strong>
+        <p>Aceleración brusca registrada con respuesta háptica.</p>
+      </div>
+    </div>
+
+    <!-- TARJETA DE CONTROL GENERAL DEL HARDWARE -->
+    <div class="control-banner-card">
+      <div class="banner-left">
+        <div class="sensor-pulse-orb" [class.active]="isSensorsActive"></div>
+        <div>
+          <h3>Transductores MEMS</h3>
+          <p>Muestreo continuo de aceleración lineal y rotación angular.</p>
+        </div>
+      </div>
+      <div class="banner-right">
+        <ion-button size="small" [color]="isSensorsActive ? 'warning' : 'primary'" (click)="toggleSensors()">
+          <ion-icon [name]="isSensorsActive ? 'pause' : 'play'" slot="start"></ion-icon>
+          {{ isSensorsActive ? 'Pausar' : 'Activar' }}
+        </ion-button>
+      </div>
+    </div>
+
+    <!-- 1. ACELERÓMETRO TRIAXIAL (X, Y, Z) -->
+    <div class="sensor-card">
+      <div class="card-header-row">
+        <div class="header-left">
+          <div class="icon-circle icon-cyan">
+            <ion-icon name="pulse-outline"></ion-icon>
+          </div>
+          <div>
+            <h4>Acelerómetro Triaxial (3-Axis)</h4>
+            <span class="caption">Fuerzas de inercia y movimiento en m/s²</span>
+          </div>
+        </div>
+        <div class="total-magnitude-badge">
+          <span>|A|: </span>
+          <strong>{{ motionData.magnitude }} m/s²</strong>
+        </div>
+      </div>
+
+      <!-- Medidores de los 3 Ejes -->
+      <div class="axis-meters-grid">
+        <!-- EJE X -->
+        <div class="axis-box">
+          <div class="axis-header">
+            <span class="axis-label x-color">EJE X (Lateral)</span>
+            <strong class="axis-value">{{ motionData.x }} m/s²</strong>
+          </div>
+          <ion-progress-bar [value]="getAccelProgress(motionData.x)" color="primary" class="axis-bar"></ion-progress-bar>
+          <span class="axis-hint">Inclinación / Desplazamiento izquierda-derecha</span>
+        </div>
+
+        <!-- EJE Y -->
+        <div class="axis-box">
+          <div class="axis-header">
+            <span class="axis-label y-color">EJE Y (Longitudinal)</span>
+            <strong class="axis-value">{{ motionData.y }} m/s²</strong>
+          </div>
+          <ion-progress-bar [value]="getAccelProgress(motionData.y)" color="success" class="axis-bar"></ion-progress-bar>
+          <span class="axis-hint">Movimiento adelante-atrás</span>
+        </div>
+
+        <!-- EJE Z -->
+        <div class="axis-box">
+          <div class="axis-header">
+            <span class="axis-label z-color">EJE Z (Vertical)</span>
+            <strong class="axis-value">{{ motionData.z }} m/s²</strong>
+          </div>
+          <ion-progress-bar [value]="getAccelProgress(motionData.z)" color="tertiary" class="axis-bar"></ion-progress-bar>
+          <span class="axis-hint">Gravedad perpendicular a la pantalla</span>
+        </div>
+      </div>
+
+      <div class="card-footer-meta">
+        <span>Intervalo de muestreo: <strong>{{ motionData.interval }} ms</strong></span>
+        <span>Aceleración con gravedad Y: <strong>{{ motionData.withGravityY }} m/s²</strong></span>
+      </div>
+    </div>
+
+    <!-- 2. GIROSCOPIO / ORIENTACIÓN ESPACIAL CON NIVEL DE BURBUJA 3D -->
+    <div class="sensor-card">
+      <div class="card-header-row">
+        <div class="header-left">
+          <div class="icon-circle icon-violet">
+            <ion-icon name="compass-outline"></ion-icon>
+          </div>
+          <div>
+            <h4>Giroscopio & Orientación Espacial</h4>
+            <span class="caption">Ángulos de Euler: Brújula, Pitch e Inclinación</span>
+          </div>
+        </div>
+      </div>
+
+      <!-- VISUALIZADOR 3D NIVEL DE BURBUJA INTERACTIVO -->
+      <div class="bubble-level-section">
+        <div class="bubble-viewport">
+          <div class="crosshair-h"></div>
+          <div class="crosshair-v"></div>
+          <div class="level-bubble" [style.transform]="getBubbleTransform()">
+            <span class="bubble-core"></span>
+          </div>
+        </div>
+        <p class="bubble-guide">Inclina tu celular para mover la burbuja del nivel en tiempo real.</p>
+      </div>
+
+      <!-- MÉTICAS ANGULARES -->
+      <div class="angles-grid">
+        <div class="angle-tile">
+          <span class="ang-title">ALPHA (Yaw)</span>
+          <strong class="ang-val">{{ orientationData.alpha }}°</strong>
+          <span class="ang-sub">Rotación en Z (Brújula)</span>
+        </div>
+        <div class="angle-tile">
+          <span class="ang-title">BETA (Pitch)</span>
+          <strong class="ang-val">{{ orientationData.beta }}°</strong>
+          <span class="ang-sub">Inclinación frontal</span>
+        </div>
+        <div class="angle-tile">
+          <span class="ang-title">GAMMA (Roll)</span>
+          <strong class="ang-val">{{ orientationData.gamma }}°</strong>
+          <span class="ang-sub">Inclinación lateral</span>
+        </div>
+      </div>
+    </div>
+
+    <!-- 3. DETECTOR DE SACUDIDA & MOTOR HÁPTICO (VIBRACIÓN) -->
+    <div class="sensor-card">
+      <div class="card-header-row">
+        <div class="header-left">
+          <div class="icon-circle icon-amber">
+            <ion-icon name="phone-portrait-outline"></ion-icon>
+          </div>
+          <div>
+            <h4>Detección de Sacudida & Vibración</h4>
+            <span class="caption">Respuesta táctil física mediante motor háptico</span>
+          </div>
+        </div>
+        <div class="shake-badge">
+          <span>Sacudidas: </span>
+          <strong>{{ shakeCount }}</strong>
+        </div>
+      </div>
+
+      <div class="shake-cta-box">
+        <p>Agita enérgicamente tu teléfono para registrar una sacudida física con vibración automática o prueba los patrones:</p>
+        <div class="haptic-buttons-grid">
+          <button class="haptic-btn light" (click)="triggerHaptic('light')">
+            <ion-icon name="finger-print-outline"></ion-icon>
+            <span>Impacto Ligero</span>
+          </button>
+          <button class="haptic-btn heavy" (click)="triggerHaptic('heavy')">
+            <ion-icon name="flash-outline"></ion-icon>
+            <span>Impacto Fuerte</span>
+          </button>
+          <button class="haptic-btn success" (click)="triggerHaptic('success')">
+            <ion-icon name="checkmark-circle-outline"></ion-icon>
+            <span>Éxito</span>
+          </button>
+          <button class="haptic-btn warning" (click)="triggerHaptic('warning')">
+            <ion-icon name="alert-triangle-outline"></ion-icon>
+            <span>Alerta</span>
+          </button>
+        </div>
+
+        <div class="shake-reset-row">
+          <ion-button size="small" fill="clear" color="medium" (click)="resetShake()">
+            <ion-icon name="refresh-outline" slot="start"></ion-icon>
+            Reiniciar contador de sacudidas
+          </ion-button>
+        </div>
+      </div>
+    </div>
+
+    <!-- 4. CAPACIDAD FÍSICA: SENSOR DE BATERÍA -->
+    <div class="sensor-card">
+      <div class="card-header-row">
+        <div class="header-left">
+          <div class="icon-circle icon-emerald">
+            <ion-icon [name]="batteryData.charging ? 'battery-charging-outline' : 'battery-full-outline'"></ion-icon>
+          </div>
+          <div>
+            <h4>Sensor de Batería (Battery Status API)</h4>
+            <span class="caption">Nivel de energía y circuito de carga del hardware</span>
+          </div>
+        </div>
+        <div [class]="'battery-badge ' + (batteryData.charging ? 'charging' : '')">
+          {{ batteryData.charging ? '⚡ CARGANDO' : '🔋 BATERÍA' }}
+        </div>
+      </div>
+
+      <div class="battery-body">
+        <div class="battery-level-row">
+          <span class="bat-percent">{{ batteryData.level }}%</span>
+          <div class="bat-bar-wrap">
+            <ion-progress-bar [value]="batteryData.level / 100" [color]="batteryData.level > 20 ? 'success' : 'danger'"></ion-progress-bar>
+          </div>
+        </div>
+        <p class="battery-hint">
+          {{ batteryData.supported ? 'Lectura en vivo suministrada por el controlador de energía del dispositivo.' : 'Emulación / Nivel estimado del dispositivo.' }}
+        </p>
+      </div>
+    </div>
+
+    <!-- 5. EXPLICACIÓN TÉCNICA DE LOS EVENTOS (Para Evaluación) -->
+    <div class="tech-explanation-card">
+      <div class="expl-header">
+        <ion-icon name="information-circle-outline"></ion-icon>
+        <span>Explicación Técnica del Sensor & Eventos</span>
+      </div>
+      <div class="expl-body">
+        <p><strong>1. Evento DeviceMotionEvent (Acelerómetro):</strong> Mide la aceleración lineal en tres dimensiones vectoriales (ejes X, Y, Z) en $m/s^2$ a través de transductores MEMS (sistemas microelectromecánicos). Excluye o incluye la gravedad terrestre ($9.8\ m/s^2$).</p>
+        <p><strong>2. Evento DeviceOrientationEvent (Giroscopio):</strong> Determina la actitud espacial del teléfono en ángulos de Euler: Alpha ($\alpha$) para el acimut/brújula, Beta ($\beta$) para cabeceo frontal/pitch, y Gamma ($\gamma$) para el alabeo lateral/roll.</p>
+        <p><strong>3. Actuador Háptico (Vibración):</strong> Se comanda al motor ERM (masa rotatoria excéntrica) o LRA (actuador resonante lineal) del chasis para producir retroalimentación física programada.</p>
+      </div>
+    </div>
+
+  </div>
+
+  <!-- ========================================================================= -->
+  <!-- VISTA 2: RADAR DE SEDES DEPORTIVAS (HAVERSINE & GPS ORIGINAL)             -->
+  <!-- ========================================================================= -->
+  <div *ngIf="activeSection === 'radar'" class="radar-container">
 
     <!-- NO GPS BANNER -->
     <div *ngIf="!geoState.coords" class="no-gps-banner">
@@ -155,4 +401,5 @@
     </div>
 
   </div>
+
 </ion-content>

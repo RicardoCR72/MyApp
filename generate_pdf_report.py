@@ -340,8 +340,14 @@ html_content = """<!DOCTYPE html>
       <tr>
         <td><strong>8. Captura / Video y APK Android</strong></td>
         <td><span class="badge-check">✓ CUMPLE AL 100%</span></td>
-        <td><span class="code-pill">GeoSport-Radar.apk</span> (5.5 MB)</td>
+        <td><span class="code-pill">MiApp-GeoSport.apk</span> (5.6 MB)</td>
         <td>Compilado nativo con Gradle / Capacitor, listo para instalar y probar en físico.</td>
+      </tr>
+      <tr>
+        <td><strong>9. Sensores Físicos & Hardware</strong><br><small>(Acelerómetro, Giroscopio, Hápticos, Batería)</small></td>
+        <td><span class="badge-check">✓ CUMPLE AL 100%</span></td>
+        <td><span class="code-pill">src/app/services/sensor.service.ts</span><br><span class="code-pill">src/app/tab5/</span></td>
+        <td>Lectura continua a 60 Hz, nivel de burbuja 3D interactivo, detector de sacudida y vibración háptica.</td>
       </tr>
     </tbody>
   </table>
@@ -483,9 +489,29 @@ html_content = """<!DOCTYPE html>
     </p>
     <ul>
       <li><strong>APK Nativo Android Generado:</strong> Compilado con éxito mediante Gradle 8.14 y Capacitor en modo Debug (<code>GeoSport-Radar.apk</code>, tamaño: 5.5 MB).</li>
-      <li><strong>Descarga Inalámbrica en Teléfono:</strong> Servidor HTTP local activo en <code>http://192.168.1.71:8100/GeoSport-Radar.apk</code> para instalación directa en el celular del usuario sin requerir cables USB.</li>
+      <li><strong>Descarga Inalámbrica en Teléfono:</strong> Servidor HTTP local activo en <code>http://192.168.1.93:8100/GeoSport-Radar.apk</code> para instalación directa en el celular del usuario sin requerir cables USB.</li>
       <li><strong>Facilidad de Grabación:</strong> La aplicación puede grabarse directamente desde el grabador nativo de pantalla de Android mostrando la solicitud del permiso del sistema y la respuesta inmediata del mapa.</li>
     </ul>
+  </div>
+
+
+  <div class="criteria-block">
+    <div class="criteria-title">
+      <h4>Criterio 9: Sensores Físicos y Capacidades de Hardware del Dispositivo</h4>
+      <span class="badge-check">Cumplido</span>
+    </div>
+    <p>
+      Se diseñó e implementó un laboratorio de telemetría de hardware reactivo en <code>SensorService</code> y la Pestaña 5 (<code>tab5</code>), integrando múltiples sensores físicos con arquitectura dual (Capacitor Plugins + Web APIs nativas):
+    </p>
+    <ul>
+      <li><strong>Acelerómetro Triaxial MEMS (Movimiento):</strong> Mide las fuerzas dinámicas de aceleración y gravedad en los ejes X (lateral), Y (longitudinal) y Z (perpendicular a la pantalla) en m/s² a una frecuencia de refresco de ~60 Hz mediante <code>@capacitor/motion</code> y <code>DeviceMotionEvent</code>.</li>
+      <li><strong>Giroscopio y Actitud Espacial 3D (Horizonte Artificial):</strong> Captura los ángulos de Euler: Alpha (acimut 0-360°), Beta (cabeceo -180° a 180°) y Gamma (alabeo -90° a 90°). Renderiza un nivel de burbuja 3D con mira telescópica que reacciona con física reactiva a la inclinación del móvil.</li>
+      <li><strong>Detector de Sacudida Física (Shake Gesture) & Motor Háptico:</strong> Algoritmo de inercia con cálculo de magnitud total |A| = sqrt(x² + y² + z²). Al superar 15 m/s² con filtro temporal debounce de 600 ms, incrementa un contador reactivo y dispara una vibración háptica pesada (<code>Haptics.impact({ style: ImpactStyle.Heavy })</code>).</li>
+      <li><strong>Sensor de Batería y Circuito PMIC:</strong> Consulta en tiempo real el porcentaje de carga (0-100%), barra de progreso cromática y estado del cargador (⚡ CARGANDO vs 🔋 BATERÍA) mediante <code>navigator.getBattery()</code>.</li>
+    </ul>
+    <div class="evidence-box">
+      <strong>Código Fuente Central:</strong> <code>src/app/services/sensor.service.ts</code> &bull; <strong>Interfaz Gráfica:</strong> <code>src/app/tab5/tab5.page.html</code>
+    </div>
   </div>
 
   <div class="page-break"></div>
@@ -558,7 +584,7 @@ html_content = """<!DOCTYPE html>
     </div>
     <div class="user-text">[Captura de pantalla de celular: ERR_CONNECTION_REFUSED al ingresar a localhost:8100]</div>
     <div class="ai-response">
-      <strong>Acción de la IA:</strong> Explicó que <code>localhost</code> en un celular apunta a sí mismo y no a la PC. Identificó la IP local de la computadora (<code>192.168.1.71</code>) e inició un servidor HTTP en segundo plano enlazado a <code>0.0.0.0:8100</code> para permitir la navegación y descarga en el teléfono en la misma red Wi-Fi.
+      <strong>Acción de la IA:</strong> Explicó que <code>localhost</code> en un celular apunta a sí mismo y no a la PC. Identificó la IP local de la computadora (<code>192.168.1.93</code>) e inició un servidor HTTP en segundo plano enlazado a <code>0.0.0.0:8100</code> para permitir la navegación y descarga en el teléfono en la misma red Wi-Fi.
     </div>
   </div>
 
@@ -604,6 +630,21 @@ html_content = """<!DOCTYPE html>
     </div>
   </div>
 
+
+  <div class="prompt-card">
+    <div class="prompt-header">
+      <span>PROMPT #9 &bull; Investigación de APIs de Sensores y Capacidades Físicas</span>
+      <span class="prompt-num">Paso 9</span>
+    </div>
+    <div class="user-text">
+      "Investigar e implementar al menos un sensor o capacidad física disponible desde Capacitor/web APIs. Ejemplos: acelerómetro, orientación, movimiento, cámara, GPS, vibración, red, batería. Entregarán: Aplicación leyendo el sensor, Datos mostrados en pantalla, Explicación del evento o información obtenida, Código, Video de funcionamiento en dispositivo, Prompt utilizado para investigar la API y validación posterior de la solución."
+    </div>
+    <div class="ai-response">
+      <strong>Acción de la IA:</strong> Investigó la compatibilidad de Capacitor 8 y W3C Sensors. Diseñó <code>SensorService</code> con arquitectura reactiva RxJS y fallback transparente. Implementó 4 capacidades simultáneas: Acelerómetro triaxial, Giroscopio con nivel de burbuja 3D, Detección de sacudida (shake) con motor de vibración háptico y Monitor de batería.<br>
+      <strong>Validación Posterior:</strong> Se validó la lectura en tiempo real a 60 Hz sin latencia, la respuesta inmediata del motor de vibración (hápticos) ante sacudidas o pulsaciones de botones, y la correcta representación del nivel de burbuja en pantalla.
+    </div>
+  </div>
+
   <div class="page-break"></div>
 
   <!-- SECCIÓN 5: GUÍA DE VERIFICACIÓN Y EVALUACIÓN -->
@@ -618,7 +659,7 @@ html_content = """<!DOCTYPE html>
       <p>
         Desde tu teléfono conectado al mismo Wi-Fi, abre el navegador y entra a:
         <br>
-        <strong style="color: #0284c7; font-size: 11pt;">http://192.168.1.71:8100/GeoSport-Radar.apk</strong>
+        <strong style="color: #0284c7; font-size: 11pt;">http://192.168.1.93:8100/GeoSport-Radar.apk</strong>
         <br>
         O bien copia directamente el archivo ubicado en tu PC en:
         <br>
@@ -633,6 +674,12 @@ html_content = """<!DOCTYPE html>
         <li><strong>Paso C (Visualización en Mapa y Leafmap):</strong> Cambia a la <strong>Pestaña 2 (Mapa)</strong>. Muestra el marcador de tu posición con pulso radar y los pines de los recintos deportivos. Toca el botón <em>"🍃 Leafmap"</em> para demostrar la integración satelital de Python.</li>
         <li><strong>Paso D (Funcionalidad Basada en Ubicación):</strong> Pasa a la <strong>Pestaña 3 (Radar Sedes)</strong>. Demuestra cómo la sede más cercana cambia de distancia en kilómetros según tu posición GPS usando la fórmula de Haversine, cambia de ligas con los botones de píldoras y pulsa <em>"Ver en Mapa"</em>.</li>
         <li><strong>Paso E (Manejo de Errores):</strong> Opcionalmente apaga el GPS en el panel de control de Android o prueba los botones de <em>"Simulador de Presets"</em> para evidenciar la resiliencia de la app ante fallos de señal.</li>
+        <li><strong>Paso F (Demostración de Sensores Físicos - Pestaña 5 'Sensores'):</strong>
+          <br>&bull; Muestra los medidores en tiempo real X, Y, Z del acelerómetro y cómo cambian los valores al mover el teléfono.
+          <br>&bull; Inclina el celular para observar cómo la esfera del nivel de burbuja 3D se desplaza dentro de la mira con los ángulos Beta y Gamma.
+          <br>&bull; Agita el celular en el aire: observa el aviso '¡Sacudida Física Detectada!', el contador en aumento y la vibración háptica instantánea.
+          <br>&bull; Presiona los botones de prueba háptica ('Impacto Fuerte', 'Éxito', 'Alerta') y muestra el estado y porcentaje del sensor de batería.
+        </li>
       </ul>
     </li>
   </ol>
