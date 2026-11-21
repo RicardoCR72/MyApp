@@ -3,6 +3,7 @@ import { Router } from '@angular/router';
 import { Subscription } from 'rxjs';
 import { GeoService, GeoState, SportVenue } from '../services/geo.service';
 import { SensorService, MotionData, OrientationData, BatteryData } from '../services/sensor.service';
+import { ContextRulesService, ContextState, DecisionRule } from '../services/context-rules.service';
 
 @Component({
   selector: 'app-tab5',
@@ -11,8 +12,11 @@ import { SensorService, MotionData, OrientationData, BatteryData } from '../serv
   standalone: false
 })
 export class Tab5Page implements OnInit, OnDestroy {
-  // Pestaña activa dentro de Tab 5: 'sensors' (Sensores físicos) o 'radar' (Radar de estadios)
-  public activeSection: 'sensors' | 'radar' = 'sensors';
+  // Pestaña activa dentro de Tab 5: 'rules' (Reglas de contexto), 'sensors' (Sensores físicos) o 'radar' (Radar de estadios)
+  public activeSection: 'rules' | 'sensors' | 'radar' = 'rules';
+
+  // ================= ESTADO DEL MOTOR DE REGLAS DE CONTEXTO =================
+  public contextState: ContextState;
 
   // ================= ESTADO DE SENSORES FÍSICOS =================
   public isSensorsActive = true;
@@ -65,11 +69,21 @@ export class Tab5Page implements OnInit, OnDestroy {
   constructor(
     public geoService: GeoService,
     public sensorService: SensorService,
+    public rulesService: ContextRulesService,
     private router: Router
-  ) {}
+  ) {
+    this.contextState = this.rulesService.currentState;
+  }
 
   ngOnInit() {
-    // 1. Suscripción a Geolocalización
+    // 1. Suscripción al Motor de Reglas de Contexto
+    this.subs.push(
+      this.rulesService.state$.subscribe(cs => {
+        this.contextState = cs;
+      })
+    );
+
+    // 2. Suscripción a Geolocalización
     this.subs.push(
       this.geoService.state.subscribe(state => {
         this.geoState = state;
@@ -77,28 +91,28 @@ export class Tab5Page implements OnInit, OnDestroy {
       })
     );
 
-    // 2. Suscripción a Acelerómetro
+    // 3. Suscripción a Acelerómetro
     this.subs.push(
       this.sensorService.motion$.subscribe(motion => {
         this.motionData = motion;
       })
     );
 
-    // 3. Suscripción a Giroscopio / Orientación Espacial
+    // 4. Suscripción a Giroscopio / Orientación Espacial
     this.subs.push(
       this.sensorService.orientation$.subscribe(orient => {
         this.orientationData = orient;
       })
     );
 
-    // 4. Suscripción a Batería
+    // 5. Suscripción a Batería
     this.subs.push(
       this.sensorService.battery$.subscribe(batt => {
         this.batteryData = batt;
       })
     );
 
-    // 5. Suscripción a Sacudidas (Shake)
+    // 6. Suscripción a Sacudidas (Shake)
     this.subs.push(
       this.sensorService.shakeCount$.subscribe(count => {
         if (count > this.shakeCount) {
@@ -120,7 +134,7 @@ export class Tab5Page implements OnInit, OnDestroy {
   }
 
   ionViewWillLeave() {
-    // Opcional: pausar cuando sale de la vista si se desea
+    // Mantener estado activo
   }
 
   ngOnDestroy() {
@@ -128,11 +142,20 @@ export class Tab5Page implements OnInit, OnDestroy {
     this.sensorService.stopSensors();
   }
 
-  // ================= MÉTODOS DE SENSORES =================
+  // ================= MÉTODOS DEL MOTOR DE REGLAS =================
   public onSectionChange(event: any) {
     this.activeSection = event.detail.value;
   }
 
+  public applyContextScenario(id: 'escenario_1' | 'escenario_2' | 'escenario_3' | 'normal' | 'real') {
+    this.rulesService.applyScenario(id);
+  }
+
+  public performVipCheckIn() {
+    this.rulesService.performVipCheckIn();
+  }
+
+  // ================= MÉTODOS DE SENSORES =================
   public toggleSensors() {
     this.isSensorsActive = !this.isSensorsActive;
     if (this.isSensorsActive) {
@@ -163,11 +186,7 @@ export class Tab5Page implements OnInit, OnDestroy {
     }, 2200);
   }
 
-  /**
-   * Calcula la posición (X, Y) de la burbuja del nivel según inclinación Pitch (beta) y Roll (gamma)
-   */
   public getBubbleTransform(): string {
-    // Limitar desplazamiento dentro del contenedor circular (radio max ~40px)
     const maxOffset = 38;
     const x = Math.max(-maxOffset, Math.min(maxOffset, this.orientationData.gamma * 1.2));
     const y = Math.max(-maxOffset, Math.min(maxOffset, this.orientationData.beta * 1.2));
@@ -175,7 +194,6 @@ export class Tab5Page implements OnInit, OnDestroy {
   }
 
   public getAccelProgress(val: number): number {
-    // Rango normal de -15 a +15 m/s² mapeado a 0..1
     const abs = Math.abs(val);
     return Math.min(1, abs / 15);
   }

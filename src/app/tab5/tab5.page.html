@@ -2,30 +2,39 @@
   <ion-toolbar class="main-toolbar">
     <div class="header-brand" slot="start">
       <div class="brand-icon">
-        <ion-icon [name]="activeSection === 'sensors' ? 'hardware-chip' : 'compass'"></ion-icon>
+        <ion-icon [name]="activeSection === 'rules' ? 'git-network' : (activeSection === 'sensors' ? 'hardware-chip' : 'compass')"></ion-icon>
       </div>
       <div>
-        <ion-title>{{ activeSection === 'sensors' ? 'Sensores Físicos & MEMS' : 'Radar Deportivo GPS' }}</ion-title>
-        <span class="sub-brand">{{ activeSection === 'sensors' ? 'Acelerómetro · Giroscopio · Hápticos · Batería' : 'Ordenamiento por Proximidad Haversine' }}</span>
+        <ion-title>
+          {{ activeSection === 'rules' ? 'Motor de Reglas de Contexto' : (activeSection === 'sensors' ? 'Sensores Físicos & MEMS' : 'Radar Deportivo GPS') }}
+        </ion-title>
+        <span class="sub-brand">
+          {{ activeSection === 'rules' ? 'Decisión Adaptativa · Geocerca · Red · Batería' : (activeSection === 'sensors' ? 'Acelerómetro · Giroscopio · Hápticos · Batería' : 'Ordenamiento por Proximidad Haversine') }}
+        </span>
       </div>
     </div>
 
-    <ion-badge slot="end" [class]="'header-badge ' + (activeSection === 'sensors' ? (isSensorsActive ? 'badge-active' : 'badge-idle') : (geoState.coords ? 'badge-active' : 'badge-idle'))">
+    <ion-badge slot="end" [class]="'header-badge ' + (activeSection === 'rules' ? (contextState.activeRulesCount > 0 ? 'badge-active' : 'badge-idle') : (activeSection === 'sensors' ? (isSensorsActive ? 'badge-active' : 'badge-idle') : (geoState.coords ? 'badge-active' : 'badge-idle')))">
+      <span *ngIf="activeSection === 'rules'">{{ contextState.activeRulesCount }}/3 REGLAS ACTIVAS</span>
       <span *ngIf="activeSection === 'sensors'">{{ isSensorsActive ? '● SENSORES 60Hz' : '○ PAUSADO' }}</span>
       <span *ngIf="activeSection === 'radar'">{{ geoState.coords ? 'Haversine ✓' : 'Esperando GPS' }}</span>
     </ion-badge>
   </ion-toolbar>
 
-  <!-- SELECTOR DE SECCIÓN (SENSORES FÍSICOS vs RADAR SEDES) -->
+  <!-- SELECTOR DE SECCIÓN (REGLAS DE CONTEXTO vs SENSORES FÍSICOS vs RADAR SEDES) -->
   <ion-toolbar class="section-toolbar">
     <ion-segment [value]="activeSection" (ionChange)="onSectionChange($event)" class="section-segment">
+      <ion-segment-button value="rules">
+        <ion-icon name="git-network-outline"></ion-icon>
+        <ion-label>🧠 Reglas Contexto</ion-label>
+      </ion-segment-button>
       <ion-segment-button value="sensors">
         <ion-icon name="speedometer-outline"></ion-icon>
         <ion-label>⚡ Sensores Físicos</ion-label>
       </ion-segment-button>
       <ion-segment-button value="radar">
         <ion-icon name="navigate-circle-outline"></ion-icon>
-        <ion-label>🏟️ Radar Sedes GPS</ion-label>
+        <ion-label>🏟️ Radar Sedes</ion-label>
       </ion-segment-button>
     </ion-segment>
   </ion-toolbar>
@@ -52,7 +61,298 @@
   </ion-toolbar>
 </ion-header>
 
-<ion-content [fullscreen]="true" class="page-content">
+<ion-content [fullscreen]="true" class="page-content" [class.eco-mode-active]="contextState.ecoModeActive">
+
+  <!-- ========================================================================= -->
+  <!-- VISTA 0: MOTOR DE REGLAS DE CONTEXTO (COMPORTAMIENTO ADAPTATIVO DINÁMICO) -->
+  <!-- ========================================================================= -->
+  <div *ngIf="activeSection === 'rules'" class="rules-container">
+
+    <!-- BANNER DE ESCENARIO ACTIVO -->
+    <div class="active-scenario-banner">
+      <div class="scenario-badge-pill" [class.simulated]="contextState.variables.isSimulated">
+        <ion-icon [name]="contextState.variables.isSimulated ? 'flask-outline' : 'radio-outline'"></ion-icon>
+        <span>{{ contextState.variables.activeScenarioName }}</span>
+      </div>
+      <span *ngIf="contextState.variables.isSimulated" class="sim-notice">Modo Simulación de Prueba Activo</span>
+    </div>
+
+    <!-- HUD DE VARIABLES DE CONTEXTO EN TIEMPO REAL -->
+    <div class="context-variables-section">
+      <div class="section-title-row">
+        <ion-icon name="layers-outline"></ion-icon>
+        <h3>Variables de Contexto Monitoreadas</h3>
+        <span class="var-count-badge">4 Variables</span>
+      </div>
+
+      <div class="context-grid">
+        <!-- Variable 1: Ubicación & Geocerca -->
+        <div class="context-card" [class.highlight]="contextState.variables.insideZone">
+          <div class="card-icon icon-geo">
+            <ion-icon name="location-outline"></ion-icon>
+          </div>
+          <div class="card-info">
+            <span class="var-label">1. Geocerca Estadio</span>
+            <strong class="var-main-value">{{ contextState.variables.distanceKm }} km</strong>
+            <span class="var-sub">{{ contextState.variables.closestVenueName }}</span>
+          </div>
+          <div class="status-pill" [class.pill-green]="contextState.variables.insideZone" [class.pill-gray]="!contextState.variables.insideZone">
+            {{ contextState.variables.insideZone ? 'EN ZONA (<= 5km)' : 'FUERA' }}
+          </div>
+        </div>
+
+        <!-- Variable 2: Conectividad de Red -->
+        <div class="context-card" [class.highlight]="!contextState.variables.isOnline">
+          <div class="card-icon icon-net" [class.offline]="!contextState.variables.isOnline">
+            <ion-icon [name]="contextState.variables.isOnline ? 'wifi-outline' : 'cloud-offline-outline'"></ion-icon>
+          </div>
+          <div class="card-info">
+            <span class="var-label">2. Conexión a Internet</span>
+            <strong class="var-main-value">{{ contextState.variables.isOnline ? 'ONLINE' : 'OFFLINE' }}</strong>
+            <span class="var-sub">Tipo: {{ contextState.variables.connectionType | uppercase }}</span>
+          </div>
+          <div class="status-pill" [class.pill-green]="contextState.variables.isOnline" [class.pill-amber]="!contextState.variables.isOnline">
+            {{ contextState.variables.isOnline ? 'CONECTADO' : 'SIN RED' }}
+          </div>
+        </div>
+
+        <!-- Variable 3: Nivel de Batería y PMIC -->
+        <div class="context-card" [class.highlight]="contextState.variables.isLowBattery">
+          <div class="card-icon icon-bat" [class.battery-critical]="contextState.variables.isLowBattery">
+            <ion-icon [name]="contextState.variables.batteryLevel > 20 ? 'battery-charging-outline' : 'battery-dead-outline'"></ion-icon>
+          </div>
+          <div class="card-info">
+            <span class="var-label">3. Nivel de Batería</span>
+            <strong class="var-main-value">{{ contextState.variables.batteryLevel }}%</strong>
+            <span class="var-sub">{{ contextState.variables.isCharging ? '⚡ Conectado al Cargador' : '🔋 Batería' }}</span>
+          </div>
+          <div class="status-pill" [class.pill-red]="contextState.variables.isLowBattery" [class.pill-green]="!contextState.variables.isLowBattery">
+            {{ contextState.variables.isLowBattery ? 'CRÍTICA (<=20%)' : 'NORMAL' }}
+          </div>
+        </div>
+
+        <!-- Variable 4: Movimiento / Aceleración -->
+        <div class="context-card">
+          <div class="card-icon icon-motion">
+            <ion-icon name="pulse-outline"></ion-icon>
+          </div>
+          <div class="card-info">
+            <span class="var-label">4. Inercia / Movimiento</span>
+            <strong class="var-main-value">{{ contextState.variables.accelerationMagnitude }} m/s²</strong>
+            <span class="var-sub">{{ contextState.variables.isMoving ? 'Desplazamiento Rápido' : 'En Reposo' }}</span>
+          </div>
+          <div class="status-pill" [class.pill-cyan]="contextState.variables.isMoving" [class.pill-gray]="!contextState.variables.isMoving">
+            {{ contextState.variables.isMoving ? 'EN MOVIMIENTO' : 'REPOSO' }}
+          </div>
+        </div>
+      </div>
+    </div>
+
+    <!-- PANEL DE CONTROL: PROBADOR DE ESCENARIOS DE EVALUACIÓN -->
+    <div class="scenarios-control-box">
+      <div class="section-title-row">
+        <ion-icon name="play-circle-outline"></ion-icon>
+        <h3>Probador de Escenarios de Evaluación</h3>
+      </div>
+      <p class="scenarios-instruction">
+        Toca cualquier preset para inyectar las condiciones de contexto exigidas y validar en tiempo real cómo cambia la aplicación:
+      </p>
+
+      <div class="scenario-buttons-grid">
+        <!-- Escenario 1 -->
+        <button class="scenario-btn scenario-1" (click)="applyContextScenario('escenario_1')">
+          <div class="btn-top">
+            <span class="emoji">🏟️</span>
+            <strong>Escenario 1</strong>
+          </div>
+          <span class="scenario-title">En Estadio + Online</span>
+          <small class="scenario-effect">&rarr; Dispara Regla 1 (VIP)</small>
+        </button>
+
+        <!-- Escenario 2 -->
+        <button class="scenario-btn scenario-2" (click)="applyContextScenario('escenario_2')">
+          <div class="btn-top">
+            <span class="emoji">📡</span>
+            <strong>Escenario 2</strong>
+          </div>
+          <span class="scenario-title">Pérdida de Conexión</span>
+          <small class="scenario-effect">&rarr; Dispara Regla 2 (Offline)</small>
+        </button>
+
+        <!-- Escenario 3 -->
+        <button class="scenario-btn scenario-3" (click)="applyContextScenario('escenario_3')">
+          <div class="btn-top">
+            <span class="emoji">🪫</span>
+            <strong>Escenario 3</strong>
+          </div>
+          <span class="scenario-title">Batería Crítica (14%)</span>
+          <small class="scenario-effect">&rarr; Dispara Regla 3 (Eco-Saver)</small>
+        </button>
+      </div>
+
+      <div class="scenario-aux-buttons">
+        <button class="aux-btn" (click)="applyContextScenario('normal')">
+          <ion-icon name="home-outline"></ion-icon>
+          Escenario Base (Fuera de Estadio)
+        </button>
+        <button class="aux-btn real-btn" (click)="applyContextScenario('real')">
+          <ion-icon name="refresh-outline"></ion-icon>
+          Restaurar Sensores Físicos Reales
+        </button>
+      </div>
+    </div>
+
+    <!-- NOTIFICACIÓN DE RESPUESTA HÁPTICA / ACCIÓN -->
+    <div *ngIf="contextState.lastHapticMessage" class="haptic-notification-bar">
+      <ion-icon name="checkmark-circle"></ion-icon>
+      <span>{{ contextState.lastHapticMessage }}</span>
+    </div>
+
+    <!-- ========================================================= -->
+    <!-- COMPORTAMIENTO ADAPTATIVO DESBLOQUEADO SEGÚN EL CONTEXTO -->
+    <!-- ========================================================= -->
+
+    <!-- COMPORTAMIENTO 1: FAN ZONE VIP (REGLA 1 ACTIVA) -->
+    <div *ngIf="contextState.vipUnlocked" class="dynamic-feature-panel vip-panel animate-fade-in">
+      <div class="feature-header">
+        <div class="badge-vip">
+          <ion-icon name="sparkles"></ion-icon>
+          <span>ACCESO VIP DESBLOQUEADO</span>
+        </div>
+        <span class="vip-live-pill">🔴 COBERTURA EN VIVO</span>
+      </div>
+
+      <div class="vip-body">
+        <h4>¡Bienvenido a la Zona Fan del Estadio!</h4>
+        <p>
+          El motor de reglas detectó que estás en el <strong>{{ contextState.variables.closestVenueName }}</strong> (a {{ contextState.variables.distanceKm }} km) y cuentas con internet activo.
+        </p>
+
+        <div class="vip-perks-grid">
+          <div class="perk-box">
+            <ion-icon name="radio"></ion-icon>
+            <strong>Transmisión Oficial</strong>
+            <span>Audio en directo de tribuna</span>
+          </div>
+          <div class="perk-box">
+            <ion-icon name="people"></ion-icon>
+            <strong>Aforo Estimado</strong>
+            <span>87% ocupación</span>
+          </div>
+          <div class="perk-box">
+            <ion-icon name="fast-food"></ion-icon>
+            <strong>Puerta de Acceso</strong>
+            <span>Acceso Norte VIP</span>
+          </div>
+        </div>
+
+        <div class="checkin-action-area">
+          <ion-button *ngIf="!contextState.checkInDone" expand="block" (click)="performVipCheckIn()" class="btn-checkin">
+            <ion-icon name="finger-print" slot="start"></ion-icon>
+            Confirmar Check-in Presencial (Háptico)
+          </ion-button>
+
+          <div *ngIf="contextState.checkInDone" class="checkin-badge-confirmed">
+            <ion-icon name="checkmark-done-circle"></ion-icon>
+            <div>
+              <strong>✓ CHECK-IN VIP VERIFICADO</strong>
+              <span>Tu credencial digital está activa para ingresar a la tribuna preferencial.</span>
+            </div>
+          </div>
+        </div>
+      </div>
+    </div>
+
+    <!-- COMPORTAMIENTO 2: RESILIENCIA OFFLINE (REGLA 2 ACTIVA) -->
+    <div *ngIf="contextState.offlineModeActive" class="dynamic-feature-panel offline-panel animate-fade-in">
+      <div class="feature-header">
+        <div class="badge-offline">
+          <ion-icon name="cloud-offline"></ion-icon>
+          <span>MODO RESILIENCIA OFFLINE ACTIVO</span>
+        </div>
+      </div>
+      <div class="offline-body">
+        <h4>Operando Fuera de Línea con Sensores Locales</h4>
+        <p>
+          Se suspendieron las solicitudes a internet para evitar errores de red. La app continúa guiándote hacia <strong>{{ contextState.variables.closestVenueName }}</strong> mediante trigonometría satelital pura.
+        </p>
+        <div class="offline-compass-box">
+          <div class="compass-mini">
+            <ion-icon name="compass-outline"></ion-icon>
+          </div>
+          <div class="compass-data">
+            <strong>Rumbo Local Calculado: 48° NE</strong>
+            <span>Distancia en línea recta: {{ contextState.variables.distanceKm }} km (Caché local)</span>
+          </div>
+        </div>
+      </div>
+    </div>
+
+    <!-- COMPORTAMIENTO 3: ECO-AHORRO DE BATERÍA (REGLA 3 ACTIVA) -->
+    <div *ngIf="contextState.ecoModeActive" class="dynamic-feature-panel eco-panel animate-fade-in">
+      <div class="feature-header">
+        <div class="badge-eco">
+          <ion-icon name="leaf-outline"></ion-icon>
+          <span>MODO ECO-AHORRO ACTIVADO ({{ contextState.variables.batteryLevel }}%)</span>
+        </div>
+      </div>
+      <div class="eco-body">
+        <h4>Preservación Inteligente de Batería</h4>
+        <p>
+          Debido a nivel de carga inferior al 20%, se redujo la tasa de refresco del Acelerómetro/Giroscopio (suspensión de 60 Hz), se apagaron animaciones fluidas y se activó el contraste Black OLED.
+        </p>
+        <div class="eco-metrics-pill">
+          <span>Ahorro energético proyectado: <strong>+45 minutos de autonomía</strong></span>
+        </div>
+      </div>
+    </div>
+
+    <!-- ========================================================= -->
+    <!-- DESGLOSE DE LAS 3 REGLAS DE DECISIÓN CONFIGURADAS -->
+    <!-- ========================================================= -->
+    <div class="rules-breakdown-section">
+      <div class="section-title-row">
+        <ion-icon name="git-branch-outline"></ion-icon>
+        <h3>Las 3 Reglas de Decisión Implementadas</h3>
+      </div>
+
+      <div *ngFor="let rule of contextState.rules" class="rule-card" [class.rule-card-active]="rule.isActive">
+        <div class="rule-card-header">
+          <div class="rule-header-left">
+            <div class="rule-icon-box" [style.background]="rule.isActive ? rule.accentColor + '22' : 'rgba(255,255,255,0.05)'" [style.color]="rule.isActive ? rule.accentColor : '#94a3b8'">
+              <ion-icon [name]="rule.icon"></ion-icon>
+            </div>
+            <div>
+              <h4 class="rule-title">{{ rule.title }}</h4>
+              <span class="rule-code-chip">{{ rule.code }}</span>
+            </div>
+          </div>
+          <div class="rule-status-badge" [class.badge-on]="rule.isActive" [class.badge-off]="!rule.isActive">
+            {{ rule.statusBadge }}
+          </div>
+        </div>
+
+        <div class="rule-card-body">
+          <div class="condition-box">
+            <span class="condition-label">Condición Evaluada en Tiempo Real:</span>
+            <code>{{ rule.condition }}</code>
+          </div>
+
+          <p class="action-desc">
+            <strong>Impacto:</strong> {{ rule.actionSummary }}
+          </p>
+
+          <div class="behavior-changes">
+            <span class="changes-label">Comportamientos Modificados en la App:</span>
+            <ul>
+              <li *ngFor="let change of rule.behaviorChanges">{{ change }}</li>
+            </ul>
+          </div>
+        </div>
+      </div>
+    </div>
+
+  </div>
 
   <!-- ========================================================================= -->
   <!-- VISTA 1: LABORATORIO DE SENSORES FÍSICOS (ACELERÓMETRO, GIROSCOPIO, ETC.) -->
@@ -108,245 +408,243 @@
         <!-- EJE X -->
         <div class="axis-box">
           <div class="axis-header">
-            <span class="axis-label x-color">EJE X (Lateral)</span>
-            <strong class="axis-value">{{ motionData.x }} m/s²</strong>
+            <span class="axis-name">Eje X (Lateral)</span>
+            <span class="axis-val">{{ motionData.x }} m/s²</span>
           </div>
-          <ion-progress-bar [value]="getAccelProgress(motionData.x)" color="primary" class="axis-bar"></ion-progress-bar>
-          <span class="axis-hint">Inclinación / Desplazamiento izquierda-derecha</span>
+          <div class="progress-track">
+            <div class="progress-fill fill-x" [style.width.%]="getAccelProgress(motionData.x) * 100"></div>
+          </div>
         </div>
 
         <!-- EJE Y -->
         <div class="axis-box">
           <div class="axis-header">
-            <span class="axis-label y-color">EJE Y (Longitudinal)</span>
-            <strong class="axis-value">{{ motionData.y }} m/s²</strong>
+            <span class="axis-name">Eje Y (Longitudinal)</span>
+            <span class="axis-val">{{ motionData.y }} m/s²</span>
           </div>
-          <ion-progress-bar [value]="getAccelProgress(motionData.y)" color="success" class="axis-bar"></ion-progress-bar>
-          <span class="axis-hint">Movimiento adelante-atrás</span>
+          <div class="progress-track">
+            <div class="progress-fill fill-y" [style.width.%]="getAccelProgress(motionData.y) * 100"></div>
+          </div>
         </div>
 
         <!-- EJE Z -->
         <div class="axis-box">
           <div class="axis-header">
-            <span class="axis-label z-color">EJE Z (Vertical)</span>
-            <strong class="axis-value">{{ motionData.z }} m/s²</strong>
+            <span class="axis-name">Eje Z (Frontal/Trasero)</span>
+            <span class="axis-val">{{ motionData.z }} m/s²</span>
           </div>
-          <ion-progress-bar [value]="getAccelProgress(motionData.z)" color="tertiary" class="axis-bar"></ion-progress-bar>
-          <span class="axis-hint">Gravedad perpendicular a la pantalla</span>
+          <div class="progress-track">
+            <div class="progress-fill fill-z" [style.width.%]="getAccelProgress(motionData.z) * 100"></div>
+          </div>
         </div>
       </div>
 
-      <div class="card-footer-meta">
-        <span>Intervalo de muestreo: <strong>{{ motionData.interval }} ms</strong></span>
-        <span>Aceleración con gravedad Y: <strong>{{ motionData.withGravityY }} m/s²</strong></span>
+      <div class="sensor-footnote">
+        Frecuencia estimada: <strong>~60 Hz</strong> &bull; Evento: <code>devicemotion / Motion.addListener</code>
       </div>
     </div>
 
-    <!-- 2. GIROSCOPIO / ORIENTACIÓN ESPACIAL CON NIVEL DE BURBUJA 3D -->
+    <!-- 2. GIROSCOPIO Y ORIENTACIÓN ESPACIAL 3D (HORIZONTE ARTIFICIAL) -->
     <div class="sensor-card">
       <div class="card-header-row">
         <div class="header-left">
-          <div class="icon-circle icon-violet">
+          <div class="icon-circle icon-purple">
             <ion-icon name="compass-outline"></ion-icon>
           </div>
           <div>
-            <h4>Giroscopio & Orientación Espacial</h4>
-            <span class="caption">Ángulos de Euler: Brújula, Pitch e Inclinación</span>
+            <h4>Giroscopio & Orientación 3D</h4>
+            <span class="caption">Ángulos de Euler y nivel de burbuja reactivo</span>
           </div>
+        </div>
+        <div class="total-magnitude-badge badge-purple">
+          <span>Roll/Pitch</span>
         </div>
       </div>
 
-      <!-- VISUALIZADOR 3D NIVEL DE BURBUJA INTERACTIVO -->
-      <div class="bubble-level-section">
-        <div class="bubble-viewport">
-          <div class="crosshair-h"></div>
-          <div class="crosshair-v"></div>
-          <div class="level-bubble" [style.transform]="getBubbleTransform()">
-            <span class="bubble-core"></span>
-          </div>
+      <!-- Visualizador Interactivo de Nivel de Burbuja (Crosshairs) -->
+      <div class="bubble-level-viewport">
+        <div class="crosshair-x"></div>
+        <div class="crosshair-y"></div>
+        <div class="level-rings">
+          <div class="ring ring-1"></div>
+          <div class="ring ring-2"></div>
         </div>
-        <p class="bubble-guide">Inclina tu celular para mover la burbuja del nivel en tiempo real.</p>
+        <!-- Burbuja móvil vinculada a la física del celular -->
+        <div class="level-bubble" [style.transform]="getBubbleTransform()">
+          <div class="bubble-glow"></div>
+        </div>
+        <div class="bubble-center-dot"></div>
       </div>
 
-      <!-- MÉTICAS ANGULARES -->
-      <div class="angles-grid">
-        <div class="angle-tile">
-          <span class="ang-title">ALPHA (Yaw)</span>
-          <strong class="ang-val">{{ orientationData.alpha }}°</strong>
-          <span class="ang-sub">Rotación en Z (Brújula)</span>
+      <!-- Valores numéricos de los Ángulos de Euler -->
+      <div class="euler-angles-row">
+        <div class="angle-item">
+          <span class="angle-name">Alpha (Acimut)</span>
+          <strong class="angle-val">{{ orientationData.alpha }}°</strong>
         </div>
-        <div class="angle-tile">
-          <span class="ang-title">BETA (Pitch)</span>
-          <strong class="ang-val">{{ orientationData.beta }}°</strong>
-          <span class="ang-sub">Inclinación frontal</span>
+        <div class="angle-item">
+          <span class="angle-name">Beta (Pitch)</span>
+          <strong class="angle-val">{{ orientationData.beta }}°</strong>
         </div>
-        <div class="angle-tile">
-          <span class="ang-title">GAMMA (Roll)</span>
-          <strong class="ang-val">{{ orientationData.gamma }}°</strong>
-          <span class="ang-sub">Inclinación lateral</span>
+        <div class="angle-item">
+          <span class="angle-name">Gamma (Roll)</span>
+          <strong class="angle-val">{{ orientationData.gamma }}°</strong>
         </div>
+      </div>
+
+      <div class="sensor-footnote">
+        Evento: <code>deviceorientation</code> &bull; Nivel físico con compensación de gravedad
       </div>
     </div>
 
-    <!-- 3. DETECTOR DE SACUDIDA & MOTOR HÁPTICO (VIBRACIÓN) -->
+    <!-- 3. MOTOR HÁPTICO Y DETECTOR DE SACUDIDA (SHAKE) -->
     <div class="sensor-card">
       <div class="card-header-row">
         <div class="header-left">
-          <div class="icon-circle icon-amber">
-            <ion-icon name="phone-portrait-outline"></ion-icon>
+          <div class="icon-circle icon-orange">
+            <ion-icon name="hardware-chip-outline"></ion-icon>
           </div>
           <div>
-            <h4>Detección de Sacudida & Vibración</h4>
-            <span class="caption">Respuesta táctil física mediante motor háptico</span>
+            <h4>Detector de Sacudida & Hápticos</h4>
+            <span class="caption">Respuesta táctil y detección de sacudida inercial</span>
           </div>
         </div>
-        <div class="shake-badge">
+        <div class="total-magnitude-badge badge-orange">
           <span>Sacudidas: </span>
           <strong>{{ shakeCount }}</strong>
         </div>
       </div>
 
-      <div class="shake-cta-box">
-        <p>Agita enérgicamente tu teléfono para registrar una sacudida física con vibración automática o prueba los patrones:</p>
-        <div class="haptic-buttons-grid">
-          <button class="haptic-btn light" (click)="triggerHaptic('light')">
-            <ion-icon name="finger-print-outline"></ion-icon>
-            <span>Impacto Ligero</span>
-          </button>
-          <button class="haptic-btn heavy" (click)="triggerHaptic('heavy')">
-            <ion-icon name="flash-outline"></ion-icon>
-            <span>Impacto Fuerte</span>
-          </button>
-          <button class="haptic-btn success" (click)="triggerHaptic('success')">
-            <ion-icon name="checkmark-circle-outline"></ion-icon>
-            <span>Éxito</span>
-          </button>
-          <button class="haptic-btn warning" (click)="triggerHaptic('warning')">
-            <ion-icon name="alert-triangle-outline"></ion-icon>
-            <span>Alerta</span>
-          </button>
+      <div class="haptic-shake-area">
+        <div class="shake-counter-box">
+          <span class="counter-label">Total de Sacudidas Físicas:</span>
+          <span class="counter-number">{{ shakeCount }}</span>
+          <ion-button size="small" fill="clear" color="medium" (click)="resetShake()">Reiniciar</ion-button>
         </div>
 
-        <div class="shake-reset-row">
-          <ion-button size="small" fill="clear" color="medium" (click)="resetShake()">
-            <ion-icon name="refresh-outline" slot="start"></ion-icon>
-            Reiniciar contador de sacudidas
+        <p class="haptic-instructions">
+          Agita enérgicamente el teléfono para probar el sensor inercial o pulsa los botones para emitir pulsos al motor de vibración háptico del teléfono:
+        </p>
+
+        <div class="haptic-buttons-grid">
+          <ion-button size="small" class="btn-haptic" (click)="triggerHaptic('light')">
+            <ion-icon name="volume-low-outline" slot="start"></ion-icon>
+            Leve
+          </ion-button>
+          <ion-button size="small" class="btn-haptic" (click)="triggerHaptic('heavy')">
+            <ion-icon name="flash-outline" slot="start"></ion-icon>
+            Impacto Fuerte
+          </ion-button>
+          <ion-button size="small" class="btn-haptic btn-success" (click)="triggerHaptic('success')">
+            <ion-icon name="checkmark-circle-outline" slot="start"></ion-icon>
+            Éxito
+          </ion-button>
+          <ion-button size="small" class="btn-haptic btn-warning" (click)="triggerHaptic('warning')">
+            <ion-icon name="warning-outline" slot="start"></ion-icon>
+            Alerta
           </ion-button>
         </div>
+
+        <div *ngIf="lastHapticTrigger" class="haptic-feedback-pill">
+          <span>¡Pulso emitido al motor háptico: <strong>{{ lastHapticTrigger }}</strong>!</span>
+        </div>
+      </div>
+
+      <div class="sensor-footnote">
+        Algoritmo: Detección cuando <code>|A| > 15 m/s²</code> con debounce temporal de 600 ms.
       </div>
     </div>
 
-    <!-- 4. CAPACIDAD FÍSICA: SENSOR DE BATERÍA -->
+    <!-- 4. SENSOR DE BATERÍA -->
     <div class="sensor-card">
       <div class="card-header-row">
         <div class="header-left">
-          <div class="icon-circle icon-emerald">
+          <div class="icon-circle icon-green">
             <ion-icon [name]="batteryData.charging ? 'battery-charging-outline' : 'battery-full-outline'"></ion-icon>
           </div>
           <div>
-            <h4>Sensor de Batería (Battery Status API)</h4>
-            <span class="caption">Nivel de energía y circuito de carga del hardware</span>
+            <h4>Sensor de Batería & Energía</h4>
+            <span class="caption">Nivel de carga y estado del acumulador</span>
           </div>
         </div>
-        <div [class]="'battery-badge ' + (batteryData.charging ? 'charging' : '')">
-          {{ batteryData.charging ? '⚡ CARGANDO' : '🔋 BATERÍA' }}
+        <div class="total-magnitude-badge badge-green">
+          <strong>{{ batteryData.level }}%</strong>
         </div>
       </div>
 
-      <div class="battery-body">
-        <div class="battery-level-row">
-          <span class="bat-percent">{{ batteryData.level }}%</span>
-          <div class="bat-bar-wrap">
-            <ion-progress-bar [value]="batteryData.level / 100" [color]="batteryData.level > 20 ? 'success' : 'danger'"></ion-progress-bar>
-          </div>
+      <div class="battery-status-bar">
+        <div class="battery-track">
+          <div class="battery-fill" [style.width.%]="batteryData.level" [class.charging]="batteryData.charging" [class.low]="batteryData.level <= 20"></div>
         </div>
-        <p class="battery-hint">
-          {{ batteryData.supported ? 'Lectura en vivo suministrada por el controlador de energía del dispositivo.' : 'Emulación / Nivel estimado del dispositivo.' }}
-        </p>
+        <div class="battery-labels">
+          <span>Estado: <strong>{{ batteryData.charging ? '⚡ Cargando' : '🔋 Desconectado' }}</strong></span>
+          <span>Porcentaje: <strong>{{ batteryData.level }}%</strong></span>
+        </div>
       </div>
-    </div>
 
-    <!-- 5. EXPLICACIÓN TÉCNICA DE LOS EVENTOS (Para Evaluación) -->
-    <div class="tech-explanation-card">
-      <div class="expl-header">
-        <ion-icon name="information-circle-outline"></ion-icon>
-        <span>Explicación Técnica del Sensor & Eventos</span>
-      </div>
-      <div class="expl-body">
-        <p><strong>1. Evento DeviceMotionEvent (Acelerómetro):</strong> Mide la aceleración lineal en tres dimensiones vectoriales (ejes X, Y, Z) en $m/s^2$ a través de transductores MEMS (sistemas microelectromecánicos). Excluye o incluye la gravedad terrestre ($9.8\ m/s^2$).</p>
-        <p><strong>2. Evento DeviceOrientationEvent (Giroscopio):</strong> Determina la actitud espacial del teléfono en ángulos de Euler: Alpha ($\alpha$) para el acimut/brújula, Beta ($\beta$) para cabeceo frontal/pitch, y Gamma ($\gamma$) para el alabeo lateral/roll.</p>
-        <p><strong>3. Actuador Háptico (Vibración):</strong> Se comanda al motor ERM (masa rotatoria excéntrica) o LRA (actuador resonante lineal) del chasis para producir retroalimentación física programada.</p>
+      <div class="sensor-footnote">
+        API: <code>navigator.getBattery()</code> &bull; Eventos: <code>levelchange</code>, <code>chargingchange</code>
       </div>
     </div>
 
   </div>
 
   <!-- ========================================================================= -->
-  <!-- VISTA 2: RADAR DE SEDES DEPORTIVAS (HAVERSINE & GPS ORIGINAL)             -->
+  <!-- VISTA 2: RADAR DE SEDES DEPORTIVAS (HAVERSINE & DISTANCIAS KILOMÉTRICAS)  -->
   <!-- ========================================================================= -->
   <div *ngIf="activeSection === 'radar'" class="radar-container">
 
-    <!-- NO GPS BANNER -->
-    <div *ngIf="!geoState.coords" class="no-gps-banner">
-      <div class="no-gps-visual">
-        <ion-icon name="navigate-circle-outline"></ion-icon>
-      </div>
-      <div class="no-gps-info">
-        <h3>Calculador de Proximidad Inactivo</h3>
-        <p>Para medir la distancia en kilómetros a cada estadio y ordenarlos desde el más cercano al más lejano, activa tu posición.</p>
-        <div class="banner-btns">
-          <ion-button expand="block" (click)="requestLocation()" class="btn-locate">
-            <ion-icon name="locate" slot="start"></ion-icon>
-            Activar GPS Real
-          </ion-button>
-          <ion-button expand="block" fill="outline" (click)="simulatePreset('dgo')" class="btn-demo">
-            <ion-icon name="flask-outline" slot="start"></ion-icon>
-            Simular Ubicación en Durango
-          </ion-button>
-        </div>
-      </div>
-    </div>
-
-    <!-- CLOSEST VENUE HERO CARD (Fórmula Haversine) -->
-    <div *ngIf="closestVenue && geoState.coords" class="closest-hero-card">
+    <!-- HERO CARD: SEDE MÁS CERCANA (DYNAMIC CORE) -->
+    <div *ngIf="closestVenue" class="hero-venue-card">
+      <div class="hero-bg-glow"></div>
       <div class="hero-top-badge">
-        <ion-icon name="flash"></ion-icon>
-        <span>SEDE MÁS CERCANA A TU POSICIÓN</span>
+        <span class="badge-pulse"></span>
+        <span>SEDE MÁS PRÓXIMA A TU UBICACIÓN</span>
       </div>
 
-      <div class="hero-header-row">
-        <div class="hero-icon-emoji">{{ closestVenue.emoji }}</div>
-        <div class="hero-titles">
-          <h2>{{ closestVenue.name }}</h2>
+      <div class="hero-body">
+        <div class="hero-emoji">{{ closestVenue.emoji }}</div>
+        <div class="hero-info">
+          <span [class]="'league-chip ' + getLeagueBadgeClass(closestVenue.league)">{{ closestVenue.league }}</span>
+          <h2 class="hero-title">{{ closestVenue.name }}</h2>
           <p class="hero-team">{{ closestVenue.team }}</p>
-          <p class="hero-city">📍 {{ closestVenue.city }}, {{ closestVenue.state }}</p>
+          <p class="hero-location">{{ closestVenue.city }}, {{ closestVenue.state }}</p>
         </div>
       </div>
 
-      <div class="hero-metrics-row">
-        <div class="metric-card">
-          <span class="m-label">DISTANCIA EXACTA</span>
-          <strong class="m-value highlighted">{{ closestVenue.distanceKm }} km</strong>
-          <span class="m-sub">En línea recta</span>
+      <!-- Métricas Clave de Proximidad -->
+      <div class="hero-metrics-grid">
+        <div class="metric-item highlight">
+          <span class="metric-label">Distancia GPS</span>
+          <div class="metric-val-unit">
+            <span class="metric-num">{{ closestVenue.distanceKm }}</span>
+            <span class="metric-unit">km</span>
+          </div>
+          <span class="metric-desc">Fórmula de Haversine</span>
         </div>
 
-        <div class="metric-card">
-          <span class="m-label">RUMBO CARDINAL</span>
-          <strong class="m-value">{{ closestVenue.bearing }}</strong>
-          <span class="m-sub">Dirección</span>
+        <div class="metric-item">
+          <span class="metric-label">Rumbo Cardinal</span>
+          <div class="metric-val-unit">
+            <span class="metric-num-small">{{ closestVenue.bearing }}</span>
+          </div>
+          <span class="metric-desc">Orientación directa</span>
         </div>
 
-        <div class="metric-card">
-          <span class="m-label">TIEMPO ESTIMADO</span>
-          <strong class="m-value">{{ estimateDriveTime(closestVenue.distanceKm) }}</strong>
-          <span class="m-sub">En vehículo</span>
+        <div class="metric-item">
+          <span class="metric-label">Tiempo Estimado</span>
+          <div class="metric-val-unit">
+            <span class="metric-num-small">{{ estimateDriveTime(closestVenue.distanceKm) }}</span>
+          </div>
+          <span class="metric-desc">Velocidad media</span>
         </div>
       </div>
 
-      <div class="hero-actions-row">
+      <!-- Acciones de Navegación -->
+      <div class="hero-actions">
         <ion-button expand="block" (click)="viewOnMap(closestVenue)" class="hero-btn-map">
           <ion-icon name="map" slot="start"></ion-icon>
-          Ver en Mapa Leaflet
+          Ver en Mapa Interactivo
         </ion-button>
         <ion-button expand="block" (click)="openInExternalMap(closestVenue)" class="hero-btn-nav" fill="outline">
           <ion-icon name="navigate" slot="start"></ion-icon>
